@@ -16,6 +16,7 @@
     tools:showIn="@layout/activity_main">
 
     <com.wonders.xlab.pedometer.widget.WalkChart
+        android:id="@+id/walkChart"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
