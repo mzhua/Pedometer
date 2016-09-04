@@ -1,5 +1,6 @@
 package com.wonders.xlab.pedometer.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -10,9 +11,14 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RectF;
+import android.graphics.SweepGradient;
+import android.os.Parcelable;
+import android.support.annotation.FloatRange;
+import android.support.annotation.IntRange;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.OvershootInterpolator;
 
 import com.wonders.xlab.pedometer.R;
 
@@ -22,9 +28,21 @@ import com.wonders.xlab.pedometer.R;
 
 public class WalkChart extends View {
     private final int DEFAULT_DRIP_HALF_HEIGHT = 20;
-    private final int DEFAULT_EMPTY_ANGLE = 45;
-
+    /**
+     * 底部默认空白的角度
+     */
+    private final int DEFAULT_EMPTY_ANGLE = 90;
+    /**
+     * 刻度数量
+     */
+    private final int DEFAULT_DIVIDER_COUNTS = 5;
+    /**
+     * 外圈的宽度
+     */
     private final float STROKE_WIDTH_OUTER_CIRCLE = 8;
+    /**
+     * 内圈的宽度
+     */
     private final float STROKE_WIDTH_INNER_CIRCLE = 36;
 
     private float mOuterPadding = DEFAULT_DRIP_HALF_HEIGHT;
@@ -35,10 +53,11 @@ public class WalkChart extends View {
     /**
      *
      */
-    private float mStartAngle;
+    private float mStartAngle = 0;
     private float mSweepAngle;
 
     private Paint mOuterCirclePaint;
+    private Paint mOuterReachedCirclePaint;
     private RectF mOuterCircleRect;
 
     private Paint mInnerCirclePaint;
@@ -49,16 +68,16 @@ public class WalkChart extends View {
     private int mDripWidth;
     private int mDripHeight;
     private float mDripCurrentAngle;
-    private RectF mDripRect;
     private Matrix mDripMatrix;
 
-    private Paint mDashPaint;
+    private Paint mDividerPaint;
+    private float mDividerLength = STROKE_WIDTH_OUTER_CIRCLE + 6;
+    private float mDividerValuePadding = 5000;
+    private float mDividerValueMin = 11000;
+    private float mStepNumber = 8900;
+    private float mDividerIntervalAngle;
 
     private Point mCenterPoint;
-
-    private int mCurrentValue;
-    private int mMinValue;
-    private int mMaxValue;
 
     public WalkChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -75,6 +94,16 @@ public class WalkChart extends View {
         init(context, attrs);
     }
 
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        return super.onSaveInstanceState();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        super.onRestoreInstanceState(state);
+    }
+
     private void init(Context context, AttributeSet attrs) {
         initAttribute(context, attrs);
 
@@ -85,21 +114,25 @@ public class WalkChart extends View {
         mOuterCirclePaint.setStyle(Paint.Style.STROKE);
         mOuterCirclePaint.setStrokeWidth(STROKE_WIDTH_OUTER_CIRCLE);
 
+        mOuterReachedCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mOuterReachedCirclePaint.setShader(new SweepGradient(0, 0, new int[]{0x00088AA1, 0xFF088AA1}, null));
+        mOuterReachedCirclePaint.setStyle(Paint.Style.STROKE);
+        mOuterReachedCirclePaint.setStrokeWidth(STROKE_WIDTH_OUTER_CIRCLE);
+
         mInnerCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mInnerCirclePaint.setColor(Color.parseColor("#D5D1D1"));
         mInnerCirclePaint.setStyle(Paint.Style.STROKE);
         mInnerCirclePaint.setStrokeWidth(STROKE_WIDTH_INNER_CIRCLE);
 
-        mDashPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mDashPaint.setColor(Color.parseColor("#747171"));
-        mDashPaint.setStyle(Paint.Style.STROKE);
-        mDashPaint.setStrokeWidth(1);
+        mDividerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mDividerPaint.setColor(Color.RED);//Color.parseColor("#747171")
+        mDividerPaint.setStyle(Paint.Style.STROKE);
+        mDividerPaint.setStrokeWidth(2);
 
         mDripBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mDripBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_drip);
         mDripWidth = mDripBitmap.getWidth();
         mDripHeight = mDripBitmap.getHeight();
-        mDripRect = new RectF(0, 0, mDripWidth, mDripHeight);
         mDripMatrix = new Matrix();
         mOuterPadding = mDripHeight / 2 - STROKE_WIDTH_OUTER_CIRCLE / 2;
         mCircleInterval = mOuterPadding;
@@ -111,7 +144,6 @@ public class WalkChart extends View {
         if (mEmptyAngle > 180) {
             mEmptyAngle = 180;
         }
-        mStartAngle = -180 - (90 - mEmptyAngle / 2);
         mSweepAngle = 360 - mEmptyAngle;
         mDripCurrentAngle = 0;
         array.recycle();
@@ -123,6 +155,7 @@ public class WalkChart extends View {
 
         //translate base point
         canvas.translate(mCenterPoint.x, mCenterPoint.y);
+        canvas.rotate(90 + mEmptyAngle / 2);
 
         //draw outer circle
         if (null == mOuterCircleRect || mOuterCircleRect.isEmpty()) {
@@ -139,24 +172,21 @@ public class WalkChart extends View {
         }
         canvas.drawArc(mInnerCircleRect, mStartAngle, mSweepAngle, false, mInnerCirclePaint);
 
-        //draw drip indicator
-        canvas.save();
-        canvas.rotate(90 + mEmptyAngle / 2);
-        drawXYAxis(canvas);
+        //draw divide
+        for (int i = 0; i < DEFAULT_DIVIDER_COUNTS; i++) {
+            float radius = mOuterCircleRect.width() / 2;
+            canvas.drawLine((float) (radius * Math.cos(Math.toRadians(i * this.mDividerIntervalAngle))), (float) (radius * Math.sin(Math.toRadians(i * this.mDividerIntervalAngle))), (float) ((radius - mDividerLength) * Math.cos(Math.toRadians(i * this.mDividerIntervalAngle))), (float) ((radius - mDividerLength) * Math.cos(Math.toRadians(i * this.mDividerIntervalAngle))), mDividerPaint);
+        }
 
+        //draw drip indicator
         mDripMatrix.reset();
         mDripMatrix.setRotate(90, mDripWidth / 2, mDripHeight / 2);
         mDripMatrix.postTranslate(mOuterCircleRect.width() / 2 - mDripWidth / 2, -mDripHeight / 2);
         mDripMatrix.postRotate(mDripCurrentAngle);
-        canvas.drawBitmap(mDripBitmap, mDripMatrix, mDripBitmapPaint);
-        canvas.restore();
-    }
 
-    private void drawXYAxis(Canvas canvas) {
-//        canvas.drawLine(-mCenterPoint.x, 0, mCenterPoint.x, 0, mDashPaint);
-//        canvas.drawLine(0, -mCenterPoint.y, 0, mCenterPoint.y, mDashPaint);
-//        canvas.drawPoint(0, mCenterPoint.y, mInnerCirclePaint);
-//        canvas.drawPoint(mCenterPoint.x, 0, mInnerCirclePaint);
+        canvas.drawArc(mOuterCircleRect, mStartAngle, mDripCurrentAngle, false, mOuterReachedCirclePaint);//start from 0, notice this
+        canvas.drawBitmap(mDripBitmap, mDripMatrix, mDripBitmapPaint);
+
     }
 
     @Override
@@ -170,37 +200,34 @@ public class WalkChart extends View {
         setMeasuredDimension(width, height);
     }
 
-    private boolean mIsAnimating = false;
-    public void setTargetAngle(final int angle) {
-        if (mIsAnimating) {
-            return;
+    private ValueAnimator mDripAnimator;
+
+    private void setTargetAngle(@FloatRange(from = 0f, to = 360f) final float angle) {
+        if (mDripAnimator != null && mDripAnimator.isRunning()) {
+            mDripAnimator.cancel();
         }
         mDripCurrentAngle = 0;
-        new Thread(new Runnable() {
+
+        mDripAnimator = ValueAnimator.ofFloat(0f, angle);
+        mDripAnimator.setDuration(2000);
+        mDripAnimator.setInterpolator(new OvershootInterpolator());
+        mDripAnimator.start();
+        mDripAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void run() {
-                mIsAnimating = true;
-                boolean rotate = true;
-                while (rotate) {
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        rotate = false;
-                        e.printStackTrace();
-                    }
-                    mDripCurrentAngle += 1;
-                    if (mDripCurrentAngle >= angle) {
-                        mDripCurrentAngle = angle;
-                        rotate = false;
-                    }
-                    float[] rect = new float[9];
-                    mDripMatrix.getValues(rect);
-                    Log.d("WalkChart", "mDripMatrix:" + mDripMatrix.toString());
-                    Log.d("WalkChart", rect[2] + ":" + rect[5]);
-                    postInvalidate();
-                }
-                mIsAnimating = false;
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mDripCurrentAngle = (float) animation.getAnimatedValue();
+                float[] rect = new float[9];
+                mDripMatrix.getValues(rect);
+                Log.d("WalkChart", "mDripMatrix:" + mDripMatrix.toString());
+                Log.d("WalkChart", rect[2] + ":" + rect[5]);
+                postInvalidate();
             }
-        }).start();
+        });
+    }
+
+    public void setStepNumber(@IntRange(from = DEFAULT_DIVIDER_COUNTS) int stepNumber) {
+        this.mDividerIntervalAngle = stepNumber / DEFAULT_DIVIDER_COUNTS * (360.0f / stepNumber);
+        this.mStepNumber = stepNumber;
+        setTargetAngle(170);
     }
 }

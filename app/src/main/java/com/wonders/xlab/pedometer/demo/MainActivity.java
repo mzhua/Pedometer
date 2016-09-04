@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mWalkChart.setTargetAngle(110);
+                mWalkChart.setStepNumber(3456);
             }
         });
     }
