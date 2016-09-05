@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.os.Parcelable;
@@ -17,6 +18,7 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
@@ -55,7 +57,7 @@ public class WalkChart extends View {
     private float mStartAngle = 0;
 
     /**
-     *外圈
+     * 外圈
      */
     private Paint mOuterReachedCirclePaint;
     private RectF mOuterCircleRect;
@@ -92,6 +94,8 @@ public class WalkChart extends View {
 
     private TextPaint mTextPaint;
     private Point mCenterPoint;
+
+    private Rect mTempRectBounds = new Rect();
 
     public WalkChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -191,33 +195,35 @@ public class WalkChart extends View {
 
     }
 
+    /**
+     * 420
+     * @param canvas
+     */
     private void drawCenterText(Canvas canvas) {
         canvas.restore();
 
-        int centerX = getWidth() / 2;//显示区域的半宽
-        float innerCircleInnerRadius = centerX - mInnerCircleRect.width() / 2 - STROKE_WIDTH_INNER_CIRCLE / 2;//内部圆内边界圆的半径
-
-//        canvas.drawLine(centerX, 0, centerX, getHeight(), mDividerPaint);
-//        canvas.drawLine(0, centerX, getWidth(), centerX, mDividerPaint);
+        int centerX = mCenterPoint.x;
+        int centerY = mCenterPoint.y;
+        float innerCircleRadius = Math.abs(mInnerCircleRect.width()) / 2 - STROKE_WIDTH_INNER_CIRCLE / 2;
 
         mTextPaint.setColor(Color.parseColor("#212121"));
         mTextPaint.setTextSize(56);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
 
-        float centerY = innerCircleInnerRadius + 250;
-        canvas.drawText("今日步数", centerX, centerY, mTextPaint);
+        canvas.drawText("今日步数", centerX, centerY - innerCircleRadius / 3, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#388FE5"));
         mTextPaint.setTextSize(100);
-        canvas.drawText(mCurrentDripIndicatorValue + " 步", centerX, centerY + 150, mTextPaint);
+        canvas.drawText(mCurrentDripIndicatorValue + " 步", centerX, centerY, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#AFB0B0"));
         mTextPaint.setTextSize(36);
-        canvas.drawText("目标: 10000", centerX, centerY + 300, mTextPaint);
+        mTextPaint.getTextBounds("目标: 10000", 0, 1, mTempRectBounds);
+        canvas.drawText("目标: 10000", centerX, centerY + 2 * innerCircleRadius / 3 - 3 * mTempRectBounds.height() / 2, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#212121"));
         mTextPaint.setTextSize(48);
-        canvas.drawText("等级: " + getVitality(mStepCounts), centerX, centerY + 400, mTextPaint);
+        canvas.drawText("等级: " + getVitality(mStepCounts), centerX, centerY + 2 * innerCircleRadius / 3, mTextPaint);
     }
 
     private String getVitality(int stepNumber) {
@@ -256,7 +262,7 @@ public class WalkChart extends View {
 
     private void drawDividers(Canvas canvas) {
         for (int i = 0; i < DEFAULT_DIVIDER_COUNTS; i++) {
-            float radius = mInnerCircleRect.width() / 2 + STROKE_WIDTH_INNER_CIRCLE / 2;
+            float radius = Math.abs(mInnerCircleRect.width()) / 2 + STROKE_WIDTH_INNER_CIRCLE / 2;
             float currentDividerAngle = i * this.mDividerIntervalAngle;
             if (currentDividerAngle > mSweepAngle) {
                 currentDividerAngle = mSweepAngle;
@@ -288,7 +294,7 @@ public class WalkChart extends View {
         if (null == mInnerCircleRect || mInnerCircleRect.isEmpty()) {
             float halfInnerStrokeWidth = STROKE_WIDTH_INNER_CIRCLE / 2;
             float outerInterval = STROKE_WIDTH_OUTER_CIRCLE + mCircleInterval;
-            mInnerCircleRect = new RectF(-mCenterPoint.x + halfInnerStrokeWidth + outerInterval + mOuterPadding, -mCenterPoint.y + halfInnerStrokeWidth + outerInterval + mOuterPadding, mCenterPoint.x - halfInnerStrokeWidth - outerInterval - mOuterPadding, mCenterPoint.y - halfInnerStrokeWidth - outerInterval - mOuterPadding);
+            mInnerCircleRect = new RectF(-mViewRadius + halfInnerStrokeWidth + outerInterval + mOuterPadding, -mViewRadius + halfInnerStrokeWidth + outerInterval + mOuterPadding, mViewRadius - halfInnerStrokeWidth - outerInterval - mOuterPadding, mViewRadius - halfInnerStrokeWidth - outerInterval - mOuterPadding);
         }
         canvas.drawArc(mInnerCircleRect, mStartAngle, mSweepAngle, false, mInnerCirclePaint);
     }
@@ -296,21 +302,26 @@ public class WalkChart extends View {
     private void drawOuterCircle(Canvas canvas) {
         if (null == mOuterCircleRect || mOuterCircleRect.isEmpty()) {
             float halfOuterStrokeWidth = STROKE_WIDTH_OUTER_CIRCLE / 2;
-            mOuterCircleRect = new RectF(-mCenterPoint.x + halfOuterStrokeWidth + mOuterPadding, -mCenterPoint.y + halfOuterStrokeWidth + mOuterPadding, mCenterPoint.x - halfOuterStrokeWidth - mOuterPadding, mCenterPoint.y - halfOuterStrokeWidth - mOuterPadding);
+            mOuterCircleRect = new RectF(-mViewRadius + halfOuterStrokeWidth + mOuterPadding, -mViewRadius + halfOuterStrokeWidth + mOuterPadding, mViewRadius - halfOuterStrokeWidth - mOuterPadding, mViewRadius - halfOuterStrokeWidth - mOuterPadding);
         }
         canvas.drawArc(mOuterCircleRect, mStartAngle, mSweepAngle, false, mOuterCirclePaint);
     }
+
+    private int mViewRadius;
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        int radius = width / 2;
-        int height = (int) ((Math.cos(Math.toRadians(mEmptyAngle / 2)) + 1) * radius);
+        Log.d("WalkChart", width + ":" + height);
 
-        mCenterPoint.set(radius, radius);
-        setMeasuredDimension(width, height);
+        mViewRadius = Math.min(width / 2, height / 2);
+//        int height = (int) ((Math.cos(Math.toRadians(mEmptyAngle / 2)) + 1) * mViewRadius);
+
+        mCenterPoint.set(width / 2, height / 2);
+//        setMeasuredDimension(width, height);
     }
 
     private ValueAnimator mDripAnimator;
