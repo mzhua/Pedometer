@@ -28,7 +28,7 @@ import com.wonders.xlab.pedometer.util.DensityUtil;
  * Created by hua on 16/9/3.
  */
 
-public class WalkChart extends View {
+public class WalkRingChart extends View {
     private final int DEFAULT_INNER_CIRCLE_WIDTH_IN_DP = 18;
     /**
      * 底部默认空白的角度
@@ -99,17 +99,17 @@ public class WalkChart extends View {
         void onChange(int value, @FloatRange(from = 0.0f, to = 1.0f) float percent);
     }
 
-    public WalkChart(Context context, AttributeSet attrs, int defStyleAttr) {
+    public WalkRingChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
-    public WalkChart(Context context) {
+    public WalkRingChart(Context context) {
         super(context);
         init(context, null);
     }
 
-    public WalkChart(Context context, AttributeSet attrs) {
+    public WalkRingChart(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
@@ -174,8 +174,11 @@ public class WalkChart extends View {
     }
 
     private void initAttribute(Context context, AttributeSet attrs) {
-        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.WalkChart);
-        mEmptyAngle = array.getFloat(R.styleable.WalkChart_EmptyAngle, DEFAULT_EMPTY_ANGLE);
+        if (attrs == null) {
+            return;
+        }
+        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.WalkRingChart);
+        mEmptyAngle = array.getFloat(R.styleable.WalkRingChart_EmptyAngle, DEFAULT_EMPTY_ANGLE);
         if (mEmptyAngle > 180) {
             mEmptyAngle = 180;
         }

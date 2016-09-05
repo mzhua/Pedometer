@@ -11,7 +11,7 @@
     tools:context="com.wonders.xlab.pedometer.demo.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <com.wonders.xlab.pedometer.widget.WalkChart
+    <com.wonders.xlab.pedometer.widget.WalkRingChart
         android:id="@+id/walkChart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

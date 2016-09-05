@@ -4,11 +4,11 @@ import android.os.Bundle;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPActivity;
-import com.wonders.xlab.pedometer.widget.WalkChart;
+import com.wonders.xlab.pedometer.widget.WalkRingChart;
 
 public class HomeActivity extends MVPActivity<HomeContract.Presenter> implements HomeContract.View {
 
-    private WalkChart mWalkChart;
+    private WalkRingChart mWalkRingChart;
     private HomeContract.Presenter mPresenter;
 
     @Override
@@ -23,7 +23,7 @@ public class HomeActivity extends MVPActivity<HomeContract.Presenter> implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        mWalkChart = (WalkChart) findViewById(R.id.walkChart);
-        mWalkChart.startWithStepCounts(67899);
+        mWalkRingChart = (WalkRingChart) findViewById(R.id.walkChart);
+        mWalkRingChart.startWithStepCounts(67899);
     }
 }

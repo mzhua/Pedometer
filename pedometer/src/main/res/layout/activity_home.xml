@@ -2,10 +2,11 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:background="@android:color/white"
               android:orientation="vertical"
               tools:context="com.wonders.xlab.pedometer.ui.home.HomeActivity">
 
-    <com.wonders.xlab.pedometer.widget.WalkChart
+    <com.wonders.xlab.pedometer.widget.WalkRingChart
         android:id="@+id/walkChart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
@@ -13,12 +14,12 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="2">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+            android:layout_alignTop="@+id/divider"
             android:layout_toLeftOf="@+id/divider"
             android:gravity="center"
             android:orientation="vertical">
@@ -33,6 +34,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
                 android:text="120大卡"
                 android:textColor="@color/textBlack"
                 android:textSize="14dp"/>
@@ -41,8 +43,8 @@
         <View
             android:id="@+id/divider"
             android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
+            android:layout_height="48dp"
+            android:layout_centerHorizontal="true"
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
@@ -53,7 +55,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+            android:layout_alignTop="@+id/divider"
             android:layout_toRightOf="@+id/divider"
             android:gravity="center"
             android:orientation="vertical">
@@ -68,14 +70,18 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
                 android:text="2.3公里"
                 android:textColor="@color/textBlack"
                 android:textSize="14dp"/>
         </LinearLayout>
     </RelativeLayout>
 
-    <View
+    <com.wonders.xlab.pedometer.widget.WalkMinutesBarChart
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"/>
+        android:layout_weight="1"
+        android:paddingBottom="8dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"/>
 </LinearLayout>
