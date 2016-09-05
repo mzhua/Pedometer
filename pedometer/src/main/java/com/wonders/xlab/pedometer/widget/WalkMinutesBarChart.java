@@ -15,7 +15,9 @@ import android.view.View;
 
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
 
@@ -24,7 +26,32 @@ import java.util.Random;
  */
 
 public class WalkMinutesBarChart extends View {
-    private HashMap<Long, Integer> mStepDatasMap;
+    class DataBean{
+        private long timeInMill;
+        private int stepCounts;
+
+        public DataBean(long timeInMill, int stepCounts) {
+            this.timeInMill = timeInMill;
+            this.stepCounts = stepCounts;
+        }
+
+        public long getTimeInMill() {
+            return timeInMill;
+        }
+
+        public void setTimeInMill(long timeInMill) {
+            this.timeInMill = timeInMill;
+        }
+
+        public int getStepCounts() {
+            return stepCounts;
+        }
+
+        public void setStepCounts(int stepCounts) {
+            this.stepCounts = stepCounts;
+        }
+    }
+    private List<DataBean> mStepDataBeanList;
 
     private Paint mDotLinePaint;
     private float mDotLineWithInPx;
@@ -72,7 +99,7 @@ public class WalkMinutesBarChart extends View {
         mDotLinePaint.setStyle(Paint.Style.STROKE);
         mDotLinePaint.setColor(Color.GRAY);
         mDotLinePaint.setStrokeWidth(mDotLineWithInPx);
-        mDotLinePaint.setPathEffect(new DashPathEffect(new float[]{10f, 5f}, 1));
+        mDotLinePaint.setPathEffect(new DashPathEffect(new float[]{5, 5, 5, 5}, 1));
 
         mBaseLineWithInPx = DensityUtil.dp2px(context, 2);
         mBaseLinePaint = new Paint();
@@ -86,18 +113,23 @@ public class WalkMinutesBarChart extends View {
         mTextPaint.setTextSize(DensityUtil.sp2px(context, 12));
         mTextPaint.getTextBounds("0", 0, 1, mTempTextBoundRect);
         mBaseLineTimeHeight = mTempTextBoundRect.height();
+
+        mBarPaint = new Paint();
+        mBarPaint.setColor(Color.parseColor("#328de8"));
+        mBarPaint.setStrokeWidth(8);
+        mBarPaint.setStyle(Paint.Style.STROKE);
     }
 
     private int mMaxStepValue = Integer.MIN_VALUE;
 
     @SuppressLint("UseSparseArrays")
     private void setupDatas() {
-        mStepDatasMap = new HashMap<>();
+        mStepDataBeanList = new ArrayList<>();
         Random random = new Random(System.currentTimeMillis());
         for (int i = 0; i < 20; i++) {
             random.setSeed(System.currentTimeMillis() + i);
             int value = random.nextInt(30000);
-            mStepDatasMap.put(System.currentTimeMillis() + i * 10000, value);
+            mStepDataBeanList.add(new DataBean(System.currentTimeMillis() + i * 10000, value));
             //计算最大值
             if (value > mMaxStepValue) {
                 mMaxStepValue = value;
@@ -113,7 +145,7 @@ public class WalkMinutesBarChart extends View {
         int left = getPaddingLeft();
         int right = getMeasuredWidth() - getPaddingRight();
 
-        int offsetBottom = mBaseLineTimeHeight + getPaddingBottom();//预留的底部时间的高度s
+        int offsetBottom = 3 * mBaseLineTimeHeight / 2 + getPaddingBottom();//预留的底部时间的高度s
         float baseLineY = getMeasuredHeight() - mBaseLineWithInPx / 2 - offsetBottom;
         float firstDotLineY = mDotLineWithInPx / 2 + getPaddingTop();
         float secondDotLineY = (firstDotLineY + baseLineY) / 2;
@@ -124,12 +156,22 @@ public class WalkMinutesBarChart extends View {
 
         drawLeftLegend(canvas, firstDotLineY, secondDotLineY);
         drawBaseLineTime(canvas);
+
+        Calendar calendar = Calendar.getInstance();
+        for (DataBean dataBean : mStepDataBeanList) {
+            calendar.setTimeInMillis(dataBean.getTimeInMill());
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int minutes = calendar.get(Calendar.MINUTE);
+            calendar.set(Calendar.YEAR,0);
+
+        }
+        canvas.drawLine(left + 100, baseLineY, left + 100, baseLineY - 4320.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
     }
 
     private void drawLeftLegend(Canvas canvas, float firstDotLineY, float secondDotLineY) {
         mTextPaint.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText(String.valueOf(mMaxStepValue), getPaddingLeft(), firstDotLineY + mBaseLineTimeHeight, mTextPaint);
-        canvas.drawText(String.valueOf(mMaxStepValue / 2), getPaddingLeft(), secondDotLineY + mBaseLineTimeHeight, mTextPaint);
+        canvas.drawText(String.valueOf(mMaxStepValue), getPaddingLeft(), firstDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
+        canvas.drawText(String.valueOf(mMaxStepValue / 2), getPaddingLeft(), secondDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
     }
 
     private void drawBaseLineTime(Canvas canvas) {
