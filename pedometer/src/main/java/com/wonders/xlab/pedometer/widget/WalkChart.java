@@ -29,28 +29,20 @@ import com.wonders.xlab.pedometer.util.DensityUtil;
  */
 
 public class WalkChart extends View {
-    private final int DEFAULT_DRIP_HALF_HEIGHT = 20;
+    private final int DEFAULT_INNER_CIRCLE_WIDTH_IN_DP = 18;
     /**
      * 底部默认空白的角度
      */
-    private final int DEFAULT_EMPTY_ANGLE = 90;
+    private final float DEFAULT_EMPTY_ANGLE = 90;
     /**
      * 刻度数量
      */
     private final int DEFAULT_DIVIDER_COUNTS = 6;
-    /**
-     * 外圈的宽度
-     */
-    private final float STROKE_WIDTH_OUTER_CIRCLE = 8;
-    /**
-     * 内圈的宽度
-     */
-    private final float STROKE_WIDTH_INNER_CIRCLE = 40;
 
-    private float mOuterPadding = DEFAULT_DRIP_HALF_HEIGHT;
+    private float mOuterPadding;
 
     private float mEmptyAngle = DEFAULT_EMPTY_ANGLE;
-    private float mCircleInterval = DEFAULT_DRIP_HALF_HEIGHT;
+    private float mCircleInterval;
 
     private float mSweepAngle;
     private Paint mOuterCirclePaint;
@@ -82,7 +74,7 @@ public class WalkChart extends View {
      * 刻度
      */
     private Paint mDividerPaint;
-    private float mDividerLength = STROKE_WIDTH_INNER_CIRCLE + 6;//长度
+    private float mDividerLength;//长度
     private int mDividerValueAppend = 5000;
     private int mDividerValueMax = 10000;
     private float mDividerIntervalAngle;//每等分的角度
@@ -96,6 +88,16 @@ public class WalkChart extends View {
     private Point mCenterPoint;
 
     private Rect mTempRectBounds = new Rect();
+
+    private OnUpdateListener mOnUpdateListener;
+
+    public void addUpdateListener(OnUpdateListener onUpdateListener) {
+        mOnUpdateListener = onUpdateListener;
+    }
+
+    public interface OnUpdateListener {
+        void onChange(int value, @FloatRange(from = 0.0f, to = 1.0f) float percent);
+    }
 
     public WalkChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -122,25 +124,38 @@ public class WalkChart extends View {
         super.onRestoreInstanceState(state);
     }
 
+    /**
+     * 外圈的宽度
+     */
+    private float mStrokeWidthOuterCircle = 8;
+    /**
+     * 内圈的宽度
+     */
+    private float mStrokeWidthInnerCircle = 40;
+
     private void init(Context context, AttributeSet attrs) {
         initAttribute(context, attrs);
+
+        mStrokeWidthOuterCircle = DensityUtil.dp2px(context, 3);
+        mStrokeWidthInnerCircle = DensityUtil.dp2px(context, DEFAULT_INNER_CIRCLE_WIDTH_IN_DP);
+        mDividerLength = DensityUtil.dp2px(context, DEFAULT_INNER_CIRCLE_WIDTH_IN_DP + 5);
 
         mCenterPoint = new Point();
 
         mOuterCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mOuterCirclePaint.setColor(Color.parseColor("#D5D1D1"));
         mOuterCirclePaint.setStyle(Paint.Style.STROKE);
-        mOuterCirclePaint.setStrokeWidth(STROKE_WIDTH_OUTER_CIRCLE);
+        mOuterCirclePaint.setStrokeWidth(mStrokeWidthOuterCircle);
 
         mOuterReachedCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mOuterReachedCirclePaint.setShader(new SweepGradient(0, 0, new int[]{0x00088AA1, 0xFF088AA1}, null));
         mOuterReachedCirclePaint.setStyle(Paint.Style.STROKE);
-        mOuterReachedCirclePaint.setStrokeWidth(STROKE_WIDTH_OUTER_CIRCLE);
+        mOuterReachedCirclePaint.setStrokeWidth(mStrokeWidthOuterCircle);
 
         mInnerCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mInnerCirclePaint.setColor(Color.parseColor("#E2E2E2"));
         mInnerCirclePaint.setStyle(Paint.Style.STROKE);
-        mInnerCirclePaint.setStrokeWidth(STROKE_WIDTH_INNER_CIRCLE);
+        mInnerCirclePaint.setStrokeWidth(mStrokeWidthInnerCircle);
 
         mDividerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mDividerPaint.setColor(Color.parseColor("#D5D1D1"));//Color.parseColor("#747171")
@@ -152,7 +167,7 @@ public class WalkChart extends View {
         mDripWidth = mDripBitmap.getWidth();
         mDripHeight = mDripBitmap.getHeight();
         mDripMatrix = new Matrix();
-        mOuterPadding = mDripHeight / 2 - STROKE_WIDTH_OUTER_CIRCLE / 2;
+        mOuterPadding = mDripHeight / 2 - mStrokeWidthOuterCircle / 2;
         mCircleInterval = mOuterPadding;
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -205,25 +220,25 @@ public class WalkChart extends View {
 
         int centerX = mCenterPoint.x;
         int centerY = mCenterPoint.y;
-        float innerCircleRadius = Math.abs(mInnerCircleRect.width()) / 2 - STROKE_WIDTH_INNER_CIRCLE / 2;
+        float innerCircleRadius = Math.abs(mInnerCircleRect.width()) / 2 - mStrokeWidthInnerCircle / 2;
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(),24));
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 20));
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.getTextBounds("今日步数", 0, 1, mTempRectBounds);
-        canvas.drawText("今日步数", centerX, centerY - 2 * mTempRectBounds.height(), mTextPaint);
+        canvas.drawText("今日步数", centerX, centerY - innerCircleRadius / 2, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#388FE5"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(),40));
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 40));
         canvas.drawText(mCurrentDripIndicatorValue + " 步", centerX, centerY, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#AFB0B0"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 14));
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 12));
         mTextPaint.getTextBounds("目标: 10000", 0, 1, mTempRectBounds);
         canvas.drawText("目标: 10000", centerX, centerY + 2 * innerCircleRadius / 3 - 2 * mTempRectBounds.height(), mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        DensityUtil.dp2px(getContext(), 20);
+        DensityUtil.dp2px(getContext(), 18);
         canvas.drawText("等级: " + getVitality(mStepCounts), centerX, centerY + 2 * innerCircleRadius / 3, mTextPaint);
     }
 
@@ -263,7 +278,7 @@ public class WalkChart extends View {
 
     private void drawDividers(Canvas canvas) {
         for (int i = 0; i < DEFAULT_DIVIDER_COUNTS; i++) {
-            float radius = Math.abs(mInnerCircleRect.width()) / 2 + STROKE_WIDTH_INNER_CIRCLE / 2;
+            float radius = Math.abs(mInnerCircleRect.width()) / 2 + mStrokeWidthInnerCircle / 2;
             float currentDividerAngle = i * this.mDividerIntervalAngle;
             if (currentDividerAngle > mSweepAngle) {
                 currentDividerAngle = mSweepAngle;
@@ -282,7 +297,7 @@ public class WalkChart extends View {
             canvas.rotate(90 + currentDividerAngle, textCenterX, textCenterY);
             //draw divider value
             mTextPaint.setColor(Color.parseColor("#212121"));
-            mTextPaint.setTextSize(DensityUtil.dp2px(getContext(),12));
+            mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 12));
             mTextPaint.setTextAlign(Paint.Align.CENTER);
 
             int steps = mDividerIntervalStepCounts * i;
@@ -293,8 +308,8 @@ public class WalkChart extends View {
 
     private void drawInnerCircle(Canvas canvas) {
         if (null == mInnerCircleRect || mInnerCircleRect.isEmpty()) {
-            float halfInnerStrokeWidth = STROKE_WIDTH_INNER_CIRCLE / 2;
-            float outerInterval = STROKE_WIDTH_OUTER_CIRCLE + mCircleInterval;
+            float halfInnerStrokeWidth = mStrokeWidthInnerCircle / 2;
+            float outerInterval = mStrokeWidthOuterCircle + mCircleInterval;
             mInnerCircleRect = new RectF(-mViewRadius + halfInnerStrokeWidth + outerInterval + mOuterPadding, -mViewRadius + halfInnerStrokeWidth + outerInterval + mOuterPadding, mViewRadius - halfInnerStrokeWidth - outerInterval - mOuterPadding, mViewRadius - halfInnerStrokeWidth - outerInterval - mOuterPadding);
         }
         canvas.drawArc(mInnerCircleRect, mStartAngle, mSweepAngle, false, mInnerCirclePaint);
@@ -302,7 +317,7 @@ public class WalkChart extends View {
 
     private void drawOuterCircle(Canvas canvas) {
         if (null == mOuterCircleRect || mOuterCircleRect.isEmpty()) {
-            float halfOuterStrokeWidth = STROKE_WIDTH_OUTER_CIRCLE / 2;
+            float halfOuterStrokeWidth = mStrokeWidthOuterCircle / 2;
             mOuterCircleRect = new RectF(-mViewRadius + halfOuterStrokeWidth + mOuterPadding, -mViewRadius + halfOuterStrokeWidth + mOuterPadding, mViewRadius - halfOuterStrokeWidth - mOuterPadding, mViewRadius - halfOuterStrokeWidth - mOuterPadding);
         }
         canvas.drawArc(mOuterCircleRect, mStartAngle, mSweepAngle, false, mOuterCirclePaint);
@@ -315,9 +330,11 @@ public class WalkChart extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
+        width = width - getPaddingLeft() - getPaddingRight();
+        height = height - getPaddingTop() - getPaddingBottom();
 
         mViewRadius = Math.min(width / 2, height / 2);
-        mCenterPoint.set(width / 2, height / 2);
+        mCenterPoint.set(getPaddingLeft() + width / 2, getPaddingTop() + height / 2);
     }
 
     private ValueAnimator mDripAnimator;
@@ -329,7 +346,7 @@ public class WalkChart extends View {
         mDripCurrentAngle = 0;
 
         mDripAnimator = ValueAnimator.ofFloat(0f, angle);
-        mDripAnimator.setDuration(2000);
+        mDripAnimator.setDuration(1600);
         mDripAnimator.setInterpolator(new DecelerateInterpolator());
         mDripAnimator.start();
         mDripAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -337,10 +354,9 @@ public class WalkChart extends View {
             public void onAnimationUpdate(ValueAnimator animation) {
                 mDripCurrentAngle = (float) animation.getAnimatedValue();
                 mCurrentDripIndicatorValue = (int) (mDripCurrentAngle * mStepPerAngle);
-//                float[] rect = new float[9];
-//                mDripMatrix.getValues(rect);
-//                Log.d("WalkChart", "mDripMatrix:" + mDripMatrix.toString());
-//                Log.d("WalkChart", rect[2] + ":" + rect[5]);
+                if (null != mOnUpdateListener) {
+                    mOnUpdateListener.onChange(mCurrentDripIndicatorValue, 1.0f * mCurrentDripIndicatorValue / mDividerValueMax);
+                }
                 postInvalidate();
             }
         });
@@ -349,7 +365,12 @@ public class WalkChart extends View {
     private float mAnglePerStep;
     private float mStepPerAngle;
 
-    public void setStepCounts(@IntRange(from = DEFAULT_DIVIDER_COUNTS) int stepCounts) {
+    /**
+     * set the step counts and start the animation
+     *
+     * @param stepCounts
+     */
+    public void startWithStepCounts(@IntRange(from = 0) int stepCounts) {
         if (stepCounts >= mDividerValueMax) {
             int d = stepCounts / mDividerValueMax;
             int remainder = stepCounts % mDividerValueMax;
