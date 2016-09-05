@@ -14,7 +14,7 @@
     <com.wonders.xlab.pedometer.widget.WalkChart
         android:id="@+id/walkChart"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         android:background="@android:color/white"
         app:EmptyAngle="90"/>
 </RelativeLayout>

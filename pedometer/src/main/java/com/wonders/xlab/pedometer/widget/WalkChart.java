@@ -18,11 +18,11 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import com.wonders.xlab.pedometer.R;
+import com.wonders.xlab.pedometer.util.DensityUtil;
 
 /**
  * Created by hua on 16/9/3.
@@ -197,6 +197,7 @@ public class WalkChart extends View {
 
     /**
      * 420
+     *
      * @param canvas
      */
     private void drawCenterText(Canvas canvas) {
@@ -207,22 +208,22 @@ public class WalkChart extends View {
         float innerCircleRadius = Math.abs(mInnerCircleRect.width()) / 2 - STROKE_WIDTH_INNER_CIRCLE / 2;
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        mTextPaint.setTextSize(56);
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(),24));
         mTextPaint.setTextAlign(Paint.Align.CENTER);
-
-        canvas.drawText("今日步数", centerX, centerY - innerCircleRadius / 3, mTextPaint);
+        mTextPaint.getTextBounds("今日步数", 0, 1, mTempRectBounds);
+        canvas.drawText("今日步数", centerX, centerY - 2 * mTempRectBounds.height(), mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#388FE5"));
-        mTextPaint.setTextSize(100);
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(),40));
         canvas.drawText(mCurrentDripIndicatorValue + " 步", centerX, centerY, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#AFB0B0"));
-        mTextPaint.setTextSize(36);
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 14));
         mTextPaint.getTextBounds("目标: 10000", 0, 1, mTempRectBounds);
-        canvas.drawText("目标: 10000", centerX, centerY + 2 * innerCircleRadius / 3 - 3 * mTempRectBounds.height() / 2, mTextPaint);
+        canvas.drawText("目标: 10000", centerX, centerY + 2 * innerCircleRadius / 3 - 2 * mTempRectBounds.height(), mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        mTextPaint.setTextSize(48);
+        DensityUtil.dp2px(getContext(), 20);
         canvas.drawText("等级: " + getVitality(mStepCounts), centerX, centerY + 2 * innerCircleRadius / 3, mTextPaint);
     }
 
@@ -281,7 +282,7 @@ public class WalkChart extends View {
             canvas.rotate(90 + currentDividerAngle, textCenterX, textCenterY);
             //draw divider value
             mTextPaint.setColor(Color.parseColor("#212121"));
-            mTextPaint.setTextSize(28);
+            mTextPaint.setTextSize(DensityUtil.dp2px(getContext(),12));
             mTextPaint.setTextAlign(Paint.Align.CENTER);
 
             int steps = mDividerIntervalStepCounts * i;
@@ -315,13 +316,8 @@ public class WalkChart extends View {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        Log.d("WalkChart", width + ":" + height);
-
         mViewRadius = Math.min(width / 2, height / 2);
-//        int height = (int) ((Math.cos(Math.toRadians(mEmptyAngle / 2)) + 1) * mViewRadius);
-
         mCenterPoint.set(width / 2, height / 2);
-//        setMeasuredDimension(width, height);
     }
 
     private ValueAnimator mDripAnimator;
