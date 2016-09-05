@@ -2,22 +2,76 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              tools:context="com.wonders.xlab.pedometer.ui.home.HomeActivity"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              tools:context="com.wonders.xlab.pedometer.ui.home.HomeActivity">
 
     <com.wonders.xlab.pedometer.widget.WalkChart
+        android:id="@+id/walkChart"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="30dp"
-        android:layout_weight="6"/>
+        android:layout_height="wrap_content"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/divider"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="消耗大卡"
+                android:textColor="@color/textBlack"
+                android:textSize="18dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="120大卡"
+                android:textColor="@color/textBlack"
+                android:textSize="14dp"/>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:background="@color/divider"
+            android:orientation="vertical"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/divider"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="行走公里"
+                android:textColor="@color/textBlack"
+                android:textSize="18dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2.3公里"
+                android:textColor="@color/textBlack"
+                android:textSize="14dp"/>
+        </LinearLayout>
     </RelativeLayout>
 
     <View

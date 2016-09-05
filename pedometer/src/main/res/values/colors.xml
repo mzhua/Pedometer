@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="pdTopBarTitleColor">@android:color/black</color>
+    <color name="divider">#d6d6d6</color>
+    <color name="textBlack">#212121</color>
+    <color name="textGray">#9c9c9c</color>
 </resources>

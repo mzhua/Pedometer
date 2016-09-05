@@ -223,13 +223,13 @@ public class WalkChart extends View {
         float innerCircleRadius = Math.abs(mInnerCircleRect.width()) / 2 - mStrokeWidthInnerCircle / 2;
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 20));
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 18));
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.getTextBounds("今日步数", 0, 1, mTempRectBounds);
         canvas.drawText("今日步数", centerX, centerY - innerCircleRadius / 2, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#388FE5"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 40));
+        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 32));
         canvas.drawText(mCurrentDripIndicatorValue + " 步", centerX, centerY, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#AFB0B0"));
@@ -238,7 +238,7 @@ public class WalkChart extends View {
         canvas.drawText("目标: 10000", centerX, centerY + 2 * innerCircleRadius / 3 - 2 * mTempRectBounds.height(), mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        DensityUtil.dp2px(getContext(), 18);
+        DensityUtil.dp2px(getContext(), 16);
         canvas.drawText("等级: " + getVitality(mStepCounts), centerX, centerY + 2 * innerCircleRadius / 3, mTextPaint);
     }
 
@@ -328,13 +328,17 @@ public class WalkChart extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        width = width - getPaddingLeft() - getPaddingRight();
-        height = height - getPaddingTop() - getPaddingBottom();
-
-        mViewRadius = Math.min(width / 2, height / 2);
-        mCenterPoint.set(getPaddingLeft() + width / 2, getPaddingTop() + height / 2);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        if (heightMode == MeasureSpec.AT_MOST) {
+            heightSize = (int) (widthSize * (1 + Math.cos(Math.toRadians(mEmptyAngle / 2))) / 2);
+            setMeasuredDimension(widthSize, heightSize);
+        }
+        int tmpW = widthSize - getPaddingLeft() - getPaddingRight();
+        int tmpH = heightSize - getPaddingTop() - getPaddingBottom();
+        mViewRadius = Math.min(tmpW / 2, tmpH / 2);
+        mCenterPoint.set(getPaddingLeft() + tmpW / 2, getPaddingTop() + tmpH / 2);
     }
 
     private ValueAnimator mDripAnimator;

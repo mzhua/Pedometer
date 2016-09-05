@@ -1,5 +1,6 @@
 package com.wonders.xlab.pedometer.demo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.wonders.xlab.pedometer.ui.home.HomeActivity;
 import com.wonders.xlab.pedometer.widget.WalkChart;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mWalkChart.startWithStepCounts(15456);
+                startActivity(new Intent(MainActivity.this, HomeActivity.class));
             }
         });
     }
