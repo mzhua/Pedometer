@@ -1,14 +1,14 @@
-package com.wonders.xlab.pedometer.widget;
+package com.wonders.xlab.pedometer.data;
 
 /**
  * Created by hua on 16/9/6.
  */
 
-public class DataBean {
+public class PMDataBean {
     private long timeInMill;
     private int stepCounts;
 
-    public DataBean(long timeInMill, int stepCounts) {
+    public PMDataBean(long timeInMill, int stepCounts) {
         this.timeInMill = timeInMill;
         this.stepCounts = stepCounts;
     }

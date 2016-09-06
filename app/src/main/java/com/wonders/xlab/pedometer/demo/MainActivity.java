@@ -10,16 +10,16 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.wonders.xlab.pedometer.ui.HomeActivity;
-import com.wonders.xlab.pedometer.widget.WalkRingChart;
+import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
 public class MainActivity extends AppCompatActivity {
-    WalkRingChart mWalkRingChart;
+    PMDailyRingChart mPMDailyRingChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mWalkRingChart = (WalkRingChart) findViewById(R.id.walkChart);
+        mPMDailyRingChart = (PMDailyRingChart) findViewById(R.id.walkChart);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="WalkRingChart">
+    <declare-styleable name="PMDailyRingChart">
         <attr name="EmptyAngle" format="float"/>
         <attr name="CircleInterval" format="dimension"/>
         <attr name="OuterCircleColor" format="color"/>

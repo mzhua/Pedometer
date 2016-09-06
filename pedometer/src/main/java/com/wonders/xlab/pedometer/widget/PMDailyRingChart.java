@@ -18,7 +18,6 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
@@ -29,7 +28,7 @@ import com.wonders.xlab.pedometer.util.DensityUtil;
  * Created by hua on 16/9/3.
  */
 
-public class WalkRingChart extends View {
+public class PMDailyRingChart extends View {
     private final int DEFAULT_INNER_CIRCLE_WIDTH_IN_DP = 18;
     /**
      * 底部默认空白的角度
@@ -100,17 +99,17 @@ public class WalkRingChart extends View {
         void onChange(int value, @FloatRange(from = 0.0f, to = 1.0f) float percent);
     }
 
-    public WalkRingChart(Context context, AttributeSet attrs, int defStyleAttr) {
+    public PMDailyRingChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
-    public WalkRingChart(Context context) {
+    public PMDailyRingChart(Context context) {
         super(context);
         init(context, null);
     }
 
-    public WalkRingChart(Context context, AttributeSet attrs) {
+    public PMDailyRingChart(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
@@ -178,8 +177,8 @@ public class WalkRingChart extends View {
         if (attrs == null) {
             return;
         }
-        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.WalkRingChart);
-        mEmptyAngle = array.getFloat(R.styleable.WalkRingChart_EmptyAngle, DEFAULT_EMPTY_ANGLE);
+        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.PMDailyRingChart);
+        mEmptyAngle = array.getFloat(R.styleable.PMDailyRingChart_EmptyAngle, DEFAULT_EMPTY_ANGLE);
         if (mEmptyAngle > 180) {
             mEmptyAngle = 180;
         }

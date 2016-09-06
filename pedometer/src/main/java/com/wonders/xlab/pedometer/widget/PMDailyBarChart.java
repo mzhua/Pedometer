@@ -13,6 +13,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.wonders.xlab.pedometer.data.PMDataBean;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
@@ -26,9 +27,9 @@ import java.util.List;
  * Created by hua on 16/9/5.
  */
 
-public class WalkMinutesBarChart extends View {
+public class PMDailyBarChart extends View {
 
-    private List<DataBean> mStepDataBeanList;
+    private List<PMDataBean> mStepPMDataBeanList;
 
     private Paint mDotLinePaint;
     private float mDotLineWithInPx;
@@ -40,23 +41,23 @@ public class WalkMinutesBarChart extends View {
     private TextPaint mTextPaint;
     private int mBaseLineTimeHeight;
 
-    public WalkMinutesBarChart(Context context) {
+    public PMDailyBarChart(Context context) {
         super(context);
         init(context, null);
     }
 
-    public WalkMinutesBarChart(Context context, AttributeSet attrs) {
+    public PMDailyBarChart(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public WalkMinutesBarChart(Context context, AttributeSet attrs, int defStyleAttr) {
+    public PMDailyBarChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public WalkMinutesBarChart(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public PMDailyBarChart(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
     }
@@ -100,25 +101,25 @@ public class WalkMinutesBarChart extends View {
     private int mMaxStepValue = Integer.MIN_VALUE;
 
     @SuppressLint("UseSparseArrays")
-    public void setDataBeanList(List<DataBean> dataBeanList) {
-        if (null == dataBeanList || dataBeanList.size() == 0) {
+    public void setDataBeanList(List<PMDataBean> PMDataBeanList) {
+        if (null == PMDataBeanList || PMDataBeanList.size() == 0) {
             return;
         }
-        if (mStepDataBeanList == null) {
-            mStepDataBeanList = new ArrayList<>();
+        if (mStepPMDataBeanList == null) {
+            mStepPMDataBeanList = new ArrayList<>();
         } else {
-            mStepDataBeanList.clear();
+            mStepPMDataBeanList.clear();
         }
-        mStepDataBeanList.addAll(dataBeanList);
+        mStepPMDataBeanList.addAll(PMDataBeanList);
 
-        Collections.sort(mStepDataBeanList, new Comparator<DataBean>() {
+        Collections.sort(mStepPMDataBeanList, new Comparator<PMDataBean>() {
             @Override
-            public int compare(DataBean o1, DataBean o2) {
+            public int compare(PMDataBean o1, PMDataBean o2) {
                 return o1.getStepCounts() > o2.getStepCounts() ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
             }
         });
 
-        mMaxStepValue = (mStepDataBeanList.get(0).getStepCounts() / 10 + 1) * 10;//去掉十位数
+        mMaxStepValue = (mStepPMDataBeanList.get(0).getStepCounts() / 10 + 1) * 10;//去掉十位数
         if (mMaxStepValue < 100) {
             mMaxStepValue = 100;
         }
@@ -148,14 +149,14 @@ public class WalkMinutesBarChart extends View {
         int contentWidth = right - left;
         float pxPerMinutes = contentWidth * 1.0f / 24 / 60;//每分钟对应的横坐标宽度
         mBarPaint.setStrokeWidth(pxPerMinutes * 14);
-        if (mStepDataBeanList != null && mStepDataBeanList.size() > 0) {
-            for (DataBean dataBean : mStepDataBeanList) {
-                calendar.setTimeInMillis(dataBean.getTimeInMill());
+        if (mStepPMDataBeanList != null && mStepPMDataBeanList.size() > 0) {
+            for (PMDataBean PMDataBean : mStepPMDataBeanList) {
+                calendar.setTimeInMillis(PMDataBean.getTimeInMill());
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 int minutes = calendar.get(Calendar.MINUTE);
                 minutes += hour * 60;
                 float x = pxPerMinutes * minutes;
-                canvas.drawLine(left + x, baseLineY, left + x, baseLineY - dataBean.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+                canvas.drawLine(left + x, baseLineY, left + x, baseLineY - PMDataBean.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
             }
         }
 
