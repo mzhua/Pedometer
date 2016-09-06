@@ -16,14 +16,10 @@ import android.view.View;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
-
-import static android.R.attr.x;
 
 
 /**
@@ -72,7 +68,6 @@ public class WalkMinutesBarChart extends View {
         /*if (attrs == null) {
             return;
         }*/
-        setDataBeanList(null);
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
@@ -102,7 +97,7 @@ public class WalkMinutesBarChart extends View {
         mBarPaint.setStyle(Paint.Style.STROKE);
     }
 
-    private int mMaxStepValue = 100;
+    private int mMaxStepValue = Integer.MIN_VALUE;
 
     @SuppressLint("UseSparseArrays")
     public void setDataBeanList(List<DataBean> dataBeanList) {
@@ -114,13 +109,7 @@ public class WalkMinutesBarChart extends View {
         } else {
             mStepDataBeanList.clear();
         }
-//        mStepDataBeanList.addAll(dataBeanList);
-        Random random = new Random(System.currentTimeMillis());
-        for (int i = 0; i < 20; i++) {
-            random.setSeed(System.currentTimeMillis() + i);
-            int value = random.nextInt(30000);
-            mStepDataBeanList.add(new DataBean(System.currentTimeMillis() + i * 1000 * 60 * 20, value));//隔20分钟
-        }
+        mStepDataBeanList.addAll(dataBeanList);
 
         Collections.sort(mStepDataBeanList, new Comparator<DataBean>() {
             @Override
@@ -134,7 +123,7 @@ public class WalkMinutesBarChart extends View {
             mMaxStepValue = 100;
         }
 
-//        invalidate();
+        invalidate();
     }
 
     @Override
@@ -153,7 +142,6 @@ public class WalkMinutesBarChart extends View {
         canvas.drawLine(left, secondDotLineY, right, secondDotLineY, mDotLinePaint);
         canvas.drawLine(left, baseLineY, right, baseLineY, mBaseLinePaint);
 
-        drawLeftLegend(canvas, firstDotLineY, secondDotLineY);
         drawBaseLineTime(canvas);
 
         Calendar calendar = Calendar.getInstance();
@@ -167,10 +155,11 @@ public class WalkMinutesBarChart extends View {
                 int minutes = calendar.get(Calendar.MINUTE);
                 minutes += hour * 60;
                 float x = pxPerMinutes * minutes;
-                canvas.drawLine(left + x, baseLineY, left + x, baseLineY - dataBean.getStepCounts() / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+                canvas.drawLine(left + x, baseLineY, left + x, baseLineY - dataBean.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
             }
         }
-        canvas.drawLine(left + 100, baseLineY, left + 100, baseLineY - 4000 / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+
+        drawLeftLegend(canvas, firstDotLineY, secondDotLineY);
     }
 
     private void drawLeftLegend(Canvas canvas, float firstDotLineY, float secondDotLineY) {
