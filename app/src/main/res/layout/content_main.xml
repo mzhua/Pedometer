@@ -11,10 +11,9 @@
     tools:context="com.wonders.xlab.pedometer.demo.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <com.wonders.xlab.pedometer.widget.WalkRingChart
-        android:id="@+id/walkChart"
-        android:layout_width="match_parent"
+    <Button
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        app:EmptyAngle="90"/>
+        android:onClick="goToPedometer"
+        android:text="计步器"/>
 </RelativeLayout>

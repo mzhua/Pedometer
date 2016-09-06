@@ -226,22 +226,22 @@ public class WalkRingChart extends View {
         float innerCircleRadius = Math.abs(mInnerCircleRect.width()) / 2 - mStrokeWidthInnerCircle / 2;
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 18));
+        mTextPaint.setTextSize(DensityUtil.sp2px(getContext(), 18));
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.getTextBounds("今日步数", 0, 1, mTempRectBounds);
         canvas.drawText("今日步数", centerX, centerY - innerCircleRadius / 2, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#388FE5"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 32));
-        canvas.drawText(mCurrentDripIndicatorValue + " 步", centerX, centerY, mTextPaint);
+        mTextPaint.setTextSize(DensityUtil.sp2px(getContext(), 32));
+        canvas.drawText(String.valueOf(mCurrentDripIndicatorValue), centerX, centerY, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#AFB0B0"));
-        mTextPaint.setTextSize(DensityUtil.dp2px(getContext(), 12));
+        mTextPaint.setTextSize(DensityUtil.sp2px(getContext(), 12));
         mTextPaint.getTextBounds("目标: 10000", 0, 1, mTempRectBounds);
         canvas.drawText("目标: 10000", centerX, centerY + 2 * innerCircleRadius / 3 - 2 * mTempRectBounds.height(), mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#212121"));
-        DensityUtil.dp2px(getContext(), 16);
+        mTextPaint.setTextSize(DensityUtil.sp2px(getContext(), 14));
         canvas.drawText("等级: " + getVitality(mStepCounts), centerX, centerY + 2 * innerCircleRadius / 3, mTextPaint);
     }
 

@@ -9,7 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.wonders.xlab.pedometer.ui.home.HomeActivity;
+import com.wonders.xlab.pedometer.ui.HomeActivity;
 import com.wonders.xlab.pedometer.widget.WalkRingChart;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,5 +52,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void goToPedometer(View view) {
+        startActivity(new Intent(MainActivity.this, HomeActivity.class));
     }
 }

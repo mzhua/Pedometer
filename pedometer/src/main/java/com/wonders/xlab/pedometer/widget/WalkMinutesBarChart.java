@@ -94,12 +94,14 @@ public class WalkMinutesBarChart extends View {
 
         setupDatas();
 
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
         mDotLineWithInPx = DensityUtil.dp2px(context, 1);
         mDotLinePaint = new Paint();
         mDotLinePaint.setStyle(Paint.Style.STROKE);
         mDotLinePaint.setColor(Color.GRAY);
         mDotLinePaint.setStrokeWidth(mDotLineWithInPx);
-        mDotLinePaint.setPathEffect(new DashPathEffect(new float[]{5, 5, 5, 5}, 1));
+        mDotLinePaint.setPathEffect(new DashPathEffect(new float[]{10, 5, 10, 5}, 0));
 
         mBaseLineWithInPx = DensityUtil.dp2px(context, 2);
         mBaseLinePaint = new Paint();
@@ -179,25 +181,21 @@ public class WalkMinutesBarChart extends View {
 
         int contentWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             int x = 0;
             String timeStr = "06:00";
             switch (i) {
                 case 0:
-                    x = contentWidth / 8;
+                    x = contentWidth / 4;
                     timeStr = "06:00";
                     break;
                 case 1:
-                    x = 3 * contentWidth / 8;
+                    x = contentWidth / 2;
                     timeStr = "12:00";
                     break;
                 case 2:
-                    x = 5 * contentWidth / 8;
+                    x = 3 * contentWidth / 4;
                     timeStr = "18:00";
-                    break;
-                case 3:
-                    x = 7 * contentWidth / 8;
-                    timeStr = "00:00";
                     break;
             }
             x += getPaddingLeft();
