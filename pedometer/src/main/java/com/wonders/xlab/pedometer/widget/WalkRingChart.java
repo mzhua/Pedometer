@@ -18,6 +18,7 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
@@ -347,11 +348,11 @@ public class WalkRingChart extends View {
     private ValueAnimator mDripAnimator;
 
     private void setTargetAngle(@FloatRange(from = 0f, to = 360f) final float angle) {
+        mDripCurrentAngle = 0;
+
         if (mDripAnimator != null && mDripAnimator.isRunning()) {
             mDripAnimator.cancel();
         }
-        mDripCurrentAngle = 0;
-
         mDripAnimator = ValueAnimator.ofFloat(0f, angle);
         mDripAnimator.setDuration(1600);
         mDripAnimator.setInterpolator(new DecelerateInterpolator());

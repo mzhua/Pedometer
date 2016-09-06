@@ -16,9 +16,14 @@ import android.view.View;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+
+import static android.R.attr.x;
 
 
 /**
@@ -26,31 +31,7 @@ import java.util.Random;
  */
 
 public class WalkMinutesBarChart extends View {
-    class DataBean{
-        private long timeInMill;
-        private int stepCounts;
 
-        public DataBean(long timeInMill, int stepCounts) {
-            this.timeInMill = timeInMill;
-            this.stepCounts = stepCounts;
-        }
-
-        public long getTimeInMill() {
-            return timeInMill;
-        }
-
-        public void setTimeInMill(long timeInMill) {
-            this.timeInMill = timeInMill;
-        }
-
-        public int getStepCounts() {
-            return stepCounts;
-        }
-
-        public void setStepCounts(int stepCounts) {
-            this.stepCounts = stepCounts;
-        }
-    }
     private List<DataBean> mStepDataBeanList;
 
     private Paint mDotLinePaint;
@@ -91,8 +72,7 @@ public class WalkMinutesBarChart extends View {
         /*if (attrs == null) {
             return;
         }*/
-
-        setupDatas();
+        setDataBeanList(null);
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
@@ -122,22 +102,39 @@ public class WalkMinutesBarChart extends View {
         mBarPaint.setStyle(Paint.Style.STROKE);
     }
 
-    private int mMaxStepValue = Integer.MIN_VALUE;
+    private int mMaxStepValue = 100;
 
     @SuppressLint("UseSparseArrays")
-    private void setupDatas() {
-        mStepDataBeanList = new ArrayList<>();
+    public void setDataBeanList(List<DataBean> dataBeanList) {
+        if (null == dataBeanList || dataBeanList.size() == 0) {
+            return;
+        }
+        if (mStepDataBeanList == null) {
+            mStepDataBeanList = new ArrayList<>();
+        } else {
+            mStepDataBeanList.clear();
+        }
+//        mStepDataBeanList.addAll(dataBeanList);
         Random random = new Random(System.currentTimeMillis());
         for (int i = 0; i < 20; i++) {
             random.setSeed(System.currentTimeMillis() + i);
             int value = random.nextInt(30000);
-            mStepDataBeanList.add(new DataBean(System.currentTimeMillis() + i * 10000, value));
-            //计算最大值
-            if (value > mMaxStepValue) {
-                mMaxStepValue = value;
-            }
+            mStepDataBeanList.add(new DataBean(System.currentTimeMillis() + i * 1000 * 60 * 20, value));//隔20分钟
         }
-        mMaxStepValue = (mMaxStepValue / 10 + 1) * 10;//去掉个位数
+
+        Collections.sort(mStepDataBeanList, new Comparator<DataBean>() {
+            @Override
+            public int compare(DataBean o1, DataBean o2) {
+                return o1.getStepCounts() > o2.getStepCounts() ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
+            }
+        });
+
+        mMaxStepValue = (mStepDataBeanList.get(0).getStepCounts() / 10 + 1) * 10;//去掉十位数
+        if (mMaxStepValue < 100) {
+            mMaxStepValue = 100;
+        }
+
+//        invalidate();
     }
 
     @Override
@@ -160,14 +157,20 @@ public class WalkMinutesBarChart extends View {
         drawBaseLineTime(canvas);
 
         Calendar calendar = Calendar.getInstance();
-        for (DataBean dataBean : mStepDataBeanList) {
-            calendar.setTimeInMillis(dataBean.getTimeInMill());
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            int minutes = calendar.get(Calendar.MINUTE);
-            calendar.set(Calendar.YEAR,0);
-
+        int contentWidth = right - left;
+        float pxPerMinutes = contentWidth * 1.0f / 24 / 60;//每分钟对应的横坐标宽度
+        mBarPaint.setStrokeWidth(pxPerMinutes * 14);
+        if (mStepDataBeanList != null && mStepDataBeanList.size() > 0) {
+            for (DataBean dataBean : mStepDataBeanList) {
+                calendar.setTimeInMillis(dataBean.getTimeInMill());
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minutes = calendar.get(Calendar.MINUTE);
+                minutes += hour * 60;
+                float x = pxPerMinutes * minutes;
+                canvas.drawLine(left + x, baseLineY, left + x, baseLineY - dataBean.getStepCounts() / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+            }
         }
-        canvas.drawLine(left + 100, baseLineY, left + 100, baseLineY - 4320.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+        canvas.drawLine(left + 100, baseLineY, left + 100, baseLineY - 4000 / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
     }
 
     private void drawLeftLegend(Canvas canvas, float firstDotLineY, float secondDotLineY) {
