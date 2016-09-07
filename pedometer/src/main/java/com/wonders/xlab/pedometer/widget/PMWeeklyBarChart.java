@@ -1,5 +1,6 @@
 package com.wonders.xlab.pedometer.widget;
 
+import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,6 +14,8 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.util.DensityUtil;
@@ -121,6 +124,10 @@ public class PMWeeklyBarChart extends View {
         mTrianglePath = new Path();
     }
 
+    private float mBarHeightFraction;
+
+    private ValueAnimator mBarAnimator;
+
     public void setDataBean(List<Integer> dataBeanList) {
         if (dataBeanList == null) {
             return;
@@ -140,7 +147,21 @@ public class PMWeeklyBarChart extends View {
 
         initParams();
 
-        invalidate();
+        if (mBarAnimator != null && mBarAnimator.isRunning()) {
+            mBarAnimator.cancel();
+        }
+        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
+        mBarAnimator.setDuration(800);
+        mBarAnimator.setInterpolator(new DecelerateInterpolator());
+        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBarHeightFraction = animation.getAnimatedFraction();
+                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
+            }
+        });
+        mBarAnimator.start();
+
     }
 
     private float mYLegendLeft;
@@ -208,12 +229,14 @@ public class PMWeeklyBarChart extends View {
         return mChartLeft + mBarWidthPx + mBarWidthPx * 2 * position;
     }
 
+    private float mTriangleTextX;
+
     private void drawTriangle(Canvas canvas) {
         if (null == mTrianglePath || mDataBeanList == null || mDataBeanList.size() == 0 || mSelectedPosition == -1) {
             return;
         }
         canvas.drawPath(mTrianglePath, mTrianglePaint);
-        canvas.drawText(String.valueOf(mDataBeanList.get(mSelectedPosition)), getBarX(mSelectedPosition), mTopLineY - 2 * mTriangleHeight, mTextPaint);
+        canvas.drawText(String.valueOf(mDataBeanList.get(mSelectedPosition)), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
     }
 
     private void drawBar(Canvas canvas) {
@@ -222,7 +245,7 @@ public class PMWeeklyBarChart extends View {
         }
         for (int i = 0; i < mBarCounts; i++) {
             float left = getBarX(i);
-            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
+            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
     }
 
@@ -264,31 +287,59 @@ public class PMWeeklyBarChart extends View {
 
     private int mSelectedPosition = -1;
 
+    public void setSelectedPosition(int selectedPosition) {
+        this.mSelectedPosition = selectedPosition;
+        invalidateSelectedIndicator();
+    }
+
+    private void invalidateSelectedIndicator() {
+        postInvalidate(getPaddingLeft(), getPaddingTop(), getMeasuredWidth() - getPaddingRight(), (int) mTopLineY);
+    }
+
+    private ValueAnimator mTriangleIndicatorAnimator;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 float pointX = event.getX();
 
+                int oldSelectedPosition = mSelectedPosition == -1 ? 0 : mSelectedPosition;
                 for (int i = 0; i < mBarCounts; i++) {
                     if (Math.abs(pointX - getBarX(i)) <= mBarWidthPx) {
                         mSelectedPosition = i;
                     }
                 }
-                if (mTrianglePath != null) {
-                    mTrianglePath.reset();
-                } else {
-                    mTrianglePath = new Path();
+                if (oldSelectedPosition == mSelectedPosition) {
+                    break;
                 }
-                float x = getBarX(mSelectedPosition);
-                float y = mTopLineY;
-                mTrianglePath.moveTo(x, y);
-                mTrianglePath.lineTo(x - mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
-                mTrianglePath.lineTo(x + mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
-                mTrianglePath.close();
+                if (mTriangleIndicatorAnimator != null && mTriangleIndicatorAnimator.isRunning()) {
+                    mTriangleIndicatorAnimator.cancel();
+                }
+                mTriangleIndicatorAnimator = ValueAnimator.ofFloat(getBarX(oldSelectedPosition), getBarX(mSelectedPosition));
+                mTriangleIndicatorAnimator.setDuration(800);
+                mTriangleIndicatorAnimator.setInterpolator(new OvershootInterpolator(1));
+                mTriangleIndicatorAnimator.start();
+                mTriangleIndicatorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float x = (float) animation.getAnimatedValue();
+                        if (mTrianglePath != null) {
+                            mTrianglePath.reset();
+                        } else {
+                            mTrianglePath = new Path();
+                        }
+                        float y = mTopLineY;
+                        mTrianglePath.moveTo(x, y);
+                        mTrianglePath.lineTo(x - mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
+                        mTrianglePath.lineTo(x + mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
+                        mTrianglePath.close();
 
-                invalidate(getPaddingLeft(), getPaddingTop(), getMeasuredWidth() - getPaddingRight(), (int) mTopLineY);
-
+                        mTriangleTextX = x;
+                        invalidateSelectedIndicator();
+                    }
+                });
+                mTriangleIndicatorAnimator.start();
                 break;
         }
 

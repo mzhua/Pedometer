@@ -20,6 +20,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.util.DensityUtil;
@@ -337,7 +338,7 @@ public class PMDailyRingChart extends View {
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        if (heightMode == MeasureSpec.AT_MOST) {
+        if (heightMode == MeasureSpec.AT_MOST || heightMode == MeasureSpec.UNSPECIFIED) {
             heightSize = (int) (widthSize * (1 + Math.cos(Math.toRadians(mEmptyAngle / 2))) / 2);
             setMeasuredDimension(widthSize, heightSize);
         }
@@ -357,7 +358,7 @@ public class PMDailyRingChart extends View {
         }
         mDripAnimator = ValueAnimator.ofFloat(0f, angle);
         mDripAnimator.setDuration(1600);
-        mDripAnimator.setInterpolator(new DecelerateInterpolator());
+        mDripAnimator.setInterpolator(new OvershootInterpolator(0.5f));
         mDripAnimator.start();
         mDripAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override

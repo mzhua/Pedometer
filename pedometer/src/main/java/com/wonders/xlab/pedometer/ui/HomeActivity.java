@@ -27,10 +27,10 @@ public class HomeActivity extends BaseActivity {
             public Fragment getItem(int position) {
                 Fragment fragment = null;
                 switch (position) {
-                    case 0:
+                    case 1:
                         fragment = new PMDailyFragment();
                         break;
-                    case 1:
+                    case 0:
                         fragment = new PMWeeklyFragment();
                         break;
                     case 2:
