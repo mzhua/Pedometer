@@ -49,7 +49,6 @@ public class PMWeeklyBarChart extends View {
     private int mNumberTextHeightPx;//数字高度
     private int mMaxStepValue = 100;
 
-    private int mBarCounts = 7;
     private String[] mBarXLegendText;
     /**
      * data source
@@ -187,10 +186,10 @@ public class PMWeeklyBarChart extends View {
     private void initParams() {
         mChartLeft = (int) (mYLegendLeft + 3 * getMaxYLegendWidth() / 2);
 
-        mBarWidthPx = (int) ((mChartRight - mChartLeft) / (mBarCounts * 2));
+        mBarWidthPx = (int) ((mChartRight - mChartLeft) / (mBarXLegendText.length * 2));
         mBarPaint.setStrokeWidth(mBarWidthPx <= 0 ? 1 : mBarWidthPx);
 
-        mTriangleEdgeLength = (int) ((mChartRight - mChartLeft) / (mBarCounts * 2) / 2);
+        mTriangleEdgeLength = (int) ((mChartRight - mChartLeft) / (mBarXLegendText.length * 2) / 2);
         mTriangleHeight = (int) (Math.sqrt(3) / 2 * mTriangleEdgeLength);
 
         int offsetBottom = 3 * mWeekTextHeightPx / 2 + getPaddingBottom();
@@ -243,14 +242,14 @@ public class PMWeeklyBarChart extends View {
         if (mDataBeanList == null || mDataBeanList.size() == 0) {
             return;
         }
-        for (int i = 0; i < mBarCounts; i++) {
+        for (int i = 0; i < mBarXLegendText.length; i++) {
             float left = getBarX(i);
             canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
     }
 
     private void drawBaseLineTime(Canvas canvas) {
-        for (int i = 0; i < mBarCounts; i++) {
+        for (int i = 0; i < mBarXLegendText.length; i++) {
             float x = getBarX(i);
             String timeStr = mBarXLegendText[i];
             canvas.drawText(timeStr, x, mBottomLineY + 3 * mWeekTextHeightPx / 2, mTextPaint);
@@ -305,7 +304,7 @@ public class PMWeeklyBarChart extends View {
                 float pointX = event.getX();
 
                 int oldSelectedPosition = mSelectedPosition == -1 ? 0 : mSelectedPosition;
-                for (int i = 0; i < mBarCounts; i++) {
+                for (int i = 0; i < mBarXLegendText.length; i++) {
                     if (Math.abs(pointX - getBarX(i)) <= mBarWidthPx) {
                         mSelectedPosition = i;
                     }

@@ -7,17 +7,18 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Build;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,15 +41,15 @@ public class PMMonthLineAreaChart extends View {
 
     private TextPaint mTextPaint;
 
-    private int mWeekTextHeightPx;//"周"的高度
     private int mNumberTextHeightPx;//数字高度
     private int mMaxStepValue = 100;
 
-    private String[] mBarXLegendText;
     /**
      * data source
      */
     private List<Integer> mDataBeanList;
+    private String[] mXLegendArray;
+    private Path mPath;
 
     public PMMonthLineAreaChart(Context context) {
         super(context);
@@ -74,14 +75,14 @@ public class PMMonthLineAreaChart extends View {
     private Rect mTempTextBoundRect = new Rect();
 
     private void init(Context context, AttributeSet attrs) {
+        mPath = new Path();
 
-        mBarXLegendText = new String[]{context.getString(R.string.pm_monday),
-                context.getString(R.string.pm_tuesday),
-                context.getString(R.string.pm_wednesday),
-                context.getString(R.string.pm_thursday),
-                context.getString(R.string.pm_friday),
-                context.getString(R.string.pm_saturday),
-                context.getString(R.string.pm_sunday),};
+        Calendar calendar = Calendar.getInstance();
+        int daysOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        mXLegendArray = new String[daysOfMonth];
+        for (int i = 0; i < daysOfMonth; i++) {
+            mXLegendArray[i] = String.valueOf(i + 1);
+        }
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
@@ -102,12 +103,10 @@ public class PMMonthLineAreaChart extends View {
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.setColor(Color.GRAY);
         mTextPaint.setTextSize(DensityUtil.sp2px(context, 12));
-        mTextPaint.getTextBounds("周", 0, 1, mTempTextBoundRect);
-        mWeekTextHeightPx = mTempTextBoundRect.height();
         mTextPaint.getTextBounds("9", 0, 1, mTempTextBoundRect);
         mNumberTextHeightPx = mTempTextBoundRect.height();
 
-        mLinePaint = new Paint();
+        mLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLinePaint.setColor(context.getResources().getColor(R.color.pmAppBlue));
         mLinePaint.setStyle(Paint.Style.FILL);
 
@@ -136,20 +135,21 @@ public class PMMonthLineAreaChart extends View {
 
         initParams();
 
-        if (mBarAnimator != null && mBarAnimator.isRunning()) {
-            mBarAnimator.cancel();
-        }
-        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
-        mBarAnimator.setDuration(800);
-        mBarAnimator.setInterpolator(new DecelerateInterpolator());
-        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBarHeightFraction = animation.getAnimatedFraction();
-                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
-            }
-        });
-        mBarAnimator.start();
+        invalidate();
+//        if (mBarAnimator != null && mBarAnimator.isRunning()) {
+//            mBarAnimator.cancel();
+//        }
+//        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
+//        mBarAnimator.setDuration(800);
+//        mBarAnimator.setInterpolator(new DecelerateInterpolator());
+//        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                mBarHeightFraction = animation.getAnimatedFraction();
+//                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
+//            }
+//        });
+//        mBarAnimator.start();
 
     }
 
@@ -172,10 +172,31 @@ public class PMMonthLineAreaChart extends View {
 
     private void initParams() {
         mChartLeft = (int) (mYLegendLeft + 3 * getMaxYLegendWidth() / 2);
-
-        int offsetBottom = 3 * mWeekTextHeightPx / 2 + getPaddingBottom();
+        int offsetBottom = 3 * mNumberTextHeightPx / 2 + getPaddingBottom();
         mBottomLineY = getMeasuredHeight() - mBottomLineWidthInPx / 2 - offsetBottom;
         mTopLineY = mDotLineWidthInPx / 2 + getPaddingTop() + 2 * mNumberTextHeightPx;//包括top padding,三角形,以及三角形上面的数字
+
+        if (mDataBeanList != null && mDataBeanList.size() >= mXLegendArray.length) {
+            if (mPath != null) {
+                if (!mPath.isEmpty()) {
+                    mPath.reset();
+                }
+            } else {
+                mPath = new Path();
+            }
+            for (int i = 0; i < mXLegendArray.length; i++) {
+                float x = getDateLegendX(i);
+                float y = mBottomLineY - mDataBeanList.get(i) * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY);
+                if (i == 0) {
+                    mPath.moveTo(x, y);
+                } else {
+                    mPath.lineTo(x, y);
+                }
+            }
+            mPath.lineTo(getDateLegendX(mXLegendArray.length - 1), mBottomLineY);
+            mPath.lineTo(mChartLeft, mBottomLineY);
+            mPath.close();
+        }
 
     }
 
@@ -192,27 +213,32 @@ public class PMMonthLineAreaChart extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawSplitters(canvas);
-        drawBaseLineTime(canvas);
+        drawXLegend(canvas);
         drawLineArea(canvas);
         drawLeftLegend(canvas);
     }
 
     private void drawLineArea(Canvas canvas) {
-        if (mDataBeanList == null || mDataBeanList.size() == 0) {
+        if (mPath == null || mPath.isEmpty()) {
             return;
         }
-        /*for (int i = 0; i < mBarCounts; i++) {
-            float left = getBarX(i);
-            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mLinePaint);
-        }*/
+        canvas.drawPath(mPath, mLinePaint);
+
     }
 
-    private void drawBaseLineTime(Canvas canvas) {
-//        for (int i = 0; i < mBarCounts; i++) {
-//            float x = getBarX(i);
-//            String timeStr = mBarXLegendText[i];
-//            canvas.drawText(timeStr, x, mBottomLineY + 3 * mWeekTextHeightPx / 2, mTextPaint);
-//        }
+    private void drawXLegend(Canvas canvas) {
+        for (int i = 0; i < mXLegendArray.length; i += 2) {
+            float x = getDateLegendX(i);
+            String timeStr = mXLegendArray[i];
+            canvas.drawText(timeStr, x, mBottomLineY + 3 * mNumberTextHeightPx / 2, mTextPaint);
+        }
+    }
+
+    private float getDateLegendX(int position) {
+        if (mXLegendArray == null || mXLegendArray.length == 0) {
+            return 1;
+        }
+        return mChartLeft + position * (mChartRight - mChartLeft) / (mXLegendArray.length - 1);
     }
 
     /**
@@ -241,9 +267,5 @@ public class PMMonthLineAreaChart extends View {
             int a = mMaxStepValue / mSectionCounts;
             canvas.drawText(String.valueOf(a * (mSectionCounts - i)), mYLegendLeft + getMaxYLegendWidth() / 2, stopY, mTextPaint);
         }
-    }
-
-    private void invalidateSelectedIndicator() {
-        postInvalidate(getPaddingLeft(), getPaddingTop(), getMeasuredWidth() - getPaddingRight(), (int) mTopLineY);
     }
 }

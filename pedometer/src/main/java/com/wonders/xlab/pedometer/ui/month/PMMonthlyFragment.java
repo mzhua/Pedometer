@@ -8,8 +8,14 @@ import android.view.ViewGroup;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
+import com.wonders.xlab.pedometer.widget.PMMonthLineAreaChart;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Random;
 
 public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implements PMMonthlyContract.View {
+    private PMMonthLineAreaChart mAreaChart;
     private PMMonthlyPresenter mPresenter;
 
     public PMMonthlyFragment() {
@@ -44,5 +50,13 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mAreaChart = (PMMonthLineAreaChart) view.findViewById(R.id.lineAreaChart);
+        Random random = new Random();
+        random.setSeed(System.currentTimeMillis());
+        ArrayList<Integer> data = new ArrayList<>();
+        for (int i = 0; i < Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH); i++) {
+            data.add(random.nextInt(30000));
+        }
+        mAreaChart.setDataBean(data);
     }
 }
