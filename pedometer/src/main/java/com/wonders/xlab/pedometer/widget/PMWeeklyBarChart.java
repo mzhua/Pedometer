@@ -6,11 +6,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Build;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.wonders.xlab.pedometer.R;
@@ -28,22 +29,28 @@ import java.util.List;
 public class PMWeeklyBarChart extends View {
 
     private int mSectionCounts = 4;//Y轴平分的数量
+
     private Paint mDotLinePaint;
     private float mDotLineWidthInPx;
 
-    private Paint mBaseLinePaint;
-    private float mBaseLineWidthInPx;
+    private Paint mBottomLinePaint;
+    private float mBottomLineWidthInPx;
 
     private Paint mBarPaint;
+    private Paint mTrianglePaint;
 
     private TextPaint mTextPaint;
+    private Path mTrianglePath;
 
-    private int mWeekTextHeightPx;
-    private int mNumberTextHeightPx;
+    private int mWeekTextHeightPx;//"周"的高度
+    private int mNumberTextHeightPx;//数字高度
     private int mMaxStepValue = 100;
 
     private int mBarCounts = 7;
     private String[] mBarXLegendText;
+    /**
+     * data source
+     */
     private List<Integer> mDataBeanList;
 
     public PMWeeklyBarChart(Context context) {
@@ -88,11 +95,11 @@ public class PMWeeklyBarChart extends View {
         mDotLinePaint.setStrokeWidth(mDotLineWidthInPx);
         mDotLinePaint.setPathEffect(new DashPathEffect(new float[]{10, 5, 10, 5}, 0));
 
-        mBaseLineWidthInPx = DensityUtil.dp2px(context, 2);
-        mBaseLinePaint = new Paint();
-        mBaseLinePaint.setStyle(Paint.Style.STROKE);
-        mBaseLinePaint.setColor(Color.parseColor("#328de8"));
-        mBaseLinePaint.setStrokeWidth(mBaseLineWidthInPx);
+        mBottomLineWidthInPx = DensityUtil.dp2px(context, 2);
+        mBottomLinePaint = new Paint();
+        mBottomLinePaint.setStyle(Paint.Style.STROKE);
+        mBottomLinePaint.setColor(Color.parseColor("#328de8"));
+        mBottomLinePaint.setStrokeWidth(mBottomLineWidthInPx);
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -108,6 +115,10 @@ public class PMWeeklyBarChart extends View {
         mBarPaint.setStrokeWidth(8);
         mBarPaint.setStyle(Paint.Style.STROKE);
 
+        mTrianglePaint = new Paint();
+        mTrianglePaint.setColor(Color.parseColor("#328de8"));
+        mTrianglePaint.setStyle(Paint.Style.FILL);
+        mTrianglePath = new Path();
     }
 
     public void setDataBean(List<Integer> dataBeanList) {
@@ -132,33 +143,39 @@ public class PMWeeklyBarChart extends View {
         invalidate();
     }
 
-    private int mYLegendLeft;
-    private int mChartLeft;
-    private int mContentRight;
-    private int mContentWidthPx;
+    private float mYLegendLeft;
+    private float mChartLeft;
+    private float mChartRight;
 
     private float mBottomLineY;
     private float mTopLineY;
-    private int mBarWidthPx;
+    private int mBarWidthPx;//柱子的宽度
+    private int mTriangleHeight;
+    private int mTriangleEdgeLength;
+
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+        mYLegendLeft = getPaddingLeft();
+        mChartRight = getMeasuredWidth() - getPaddingRight();
+
         initParams();
     }
 
     private void initParams() {
-        int offsetBottom = 3 * mWeekTextHeightPx / 2 + getPaddingBottom();
-        mBottomLineY = getMeasuredHeight() - mBaseLineWidthInPx / 2 - offsetBottom;
-        mTopLineY = mDotLineWidthInPx / 2 + getPaddingTop();
-
-        mYLegendLeft = getPaddingLeft();
         mChartLeft = (int) (mYLegendLeft + 3 * getMaxYLegendWidth() / 2);
-        mContentRight = getMeasuredWidth() - getPaddingRight();
-        mContentWidthPx = mContentRight - mChartLeft;
 
-        mBarWidthPx = mContentWidthPx / (mBarCounts * 2);
+        mBarWidthPx = (int) ((mChartRight - mChartLeft) / (mBarCounts * 2));
         mBarPaint.setStrokeWidth(mBarWidthPx <= 0 ? 1 : mBarWidthPx);
+
+        mTriangleEdgeLength = (int) ((mChartRight - mChartLeft) / (mBarCounts * 2) / 2);
+        mTriangleHeight = (int) (Math.sqrt(3) / 2 * mTriangleEdgeLength);
+
+        int offsetBottom = 3 * mWeekTextHeightPx / 2 + getPaddingBottom();
+        mBottomLineY = getMeasuredHeight() - mBottomLineWidthInPx / 2 - offsetBottom;
+        mTopLineY = mDotLineWidthInPx / 2 + getPaddingTop() + mTriangleHeight + 2 * mNumberTextHeightPx;//包括top padding,三角形,以及三角形上面的数字
+
     }
 
     /**
@@ -177,16 +194,43 @@ public class PMWeeklyBarChart extends View {
         drawBaseLineTime(canvas);
         drawBar(canvas);
         drawLeftLegend(canvas);
+
+        drawTriangle(canvas);
+    }
+
+    /**
+     * 获取第position根柱子的x坐标
+     *
+     * @param position
+     * @return
+     */
+    private float getBarX(int position) {
+        return mChartLeft + mBarWidthPx + mBarWidthPx * 2 * position;
+    }
+
+    private void drawTriangle(Canvas canvas) {
+        if (null == mTrianglePath || mDataBeanList == null || mDataBeanList.size() == 0 || mSelectedPosition == -1) {
+            return;
+        }
+        canvas.drawPath(mTrianglePath, mTrianglePaint);
+        canvas.drawText(String.valueOf(mDataBeanList.get(mSelectedPosition)), getBarX(mSelectedPosition), mTopLineY - 2 * mTriangleHeight, mTextPaint);
     }
 
     private void drawBar(Canvas canvas) {
         if (mDataBeanList == null || mDataBeanList.size() == 0) {
             return;
         }
-        float startX = mChartLeft + mBarWidthPx;
         for (int i = 0; i < mBarCounts; i++) {
-            float left = startX + mBarWidthPx * 2 * i;
+            float left = getBarX(i);
             canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
+        }
+    }
+
+    private void drawBaseLineTime(Canvas canvas) {
+        for (int i = 0; i < mBarCounts; i++) {
+            float x = getBarX(i);
+            String timeStr = mBarXLegendText[i];
+            canvas.drawText(timeStr, x, mBottomLineY + 3 * mWeekTextHeightPx / 2, mTextPaint);
         }
     }
 
@@ -203,9 +247,9 @@ public class PMWeeklyBarChart extends View {
             if (i < 4) {
                 paint = mDotLinePaint;
             } else {
-                paint = mBaseLinePaint;
+                paint = mBottomLinePaint;
             }
-            canvas.drawLine(mChartLeft, stopY, mContentRight, stopY, paint);
+            canvas.drawLine(mChartLeft, stopY, mChartRight, stopY, paint);
         }
     }
 
@@ -218,11 +262,36 @@ public class PMWeeklyBarChart extends View {
         }
     }
 
-    private void drawBaseLineTime(Canvas canvas) {
-        for (int i = 0; i < mBarCounts; i++) {
-            int x = mBarWidthPx + mChartLeft + i * 2 * mBarWidthPx;
-            String timeStr = mBarXLegendText[i];
-            canvas.drawText(timeStr, x, mBottomLineY + 3 * mWeekTextHeightPx / 2, mTextPaint);
+    private int mSelectedPosition = -1;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                float pointX = event.getX();
+
+                for (int i = 0; i < mBarCounts; i++) {
+                    if (Math.abs(pointX - getBarX(i)) <= mBarWidthPx) {
+                        mSelectedPosition = i;
+                    }
+                }
+                if (mTrianglePath != null) {
+                    mTrianglePath.reset();
+                } else {
+                    mTrianglePath = new Path();
+                }
+                float x = getBarX(mSelectedPosition);
+                float y = mTopLineY;
+                mTrianglePath.moveTo(x, y);
+                mTrianglePath.lineTo(x - mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
+                mTrianglePath.lineTo(x + mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
+                mTrianglePath.close();
+
+                invalidate(getPaddingLeft(), getPaddingTop(), getMeasuredWidth() - getPaddingRight(), (int) mTopLineY);
+
+                break;
         }
+
+        return super.onTouchEvent(event);
     }
 }

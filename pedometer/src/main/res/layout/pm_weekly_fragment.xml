@@ -6,11 +6,11 @@
 
     <com.wonders.xlab.pedometer.widget.PMWeeklyBarChart
         android:id="@+id/barChart"
-        android:layout_width="match_parent"
+        android:layout_width="400dp"
         android:layout_height="300dp"
         android:paddingTop="8dp"
-        android:paddingBottom="16dp"
-        android:paddingLeft="8dp"
+        android:paddingBottom="8dp"
+        android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:background="@android:color/darker_gray"/>
 
