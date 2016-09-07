@@ -8,7 +8,7 @@ import android.support.v4.view.ViewPager;
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
-import com.wonders.xlab.pedometer.ui.monthly.PMMonthlyFragment;
+import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
 
 public class HomeActivity extends BaseActivity {
@@ -27,13 +27,13 @@ public class HomeActivity extends BaseActivity {
             public Fragment getItem(int position) {
                 Fragment fragment = null;
                 switch (position) {
-                    case 1:
+                    case 2:
                         fragment = new PMDailyFragment();
                         break;
-                    case 0:
+                    case 1:
                         fragment = new PMWeeklyFragment();
                         break;
-                    case 2:
+                    case 0:
                         fragment = new PMMonthlyFragment();
                         break;
                 }

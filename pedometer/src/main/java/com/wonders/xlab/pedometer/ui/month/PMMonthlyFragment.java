@@ -1,4 +1,4 @@
-package com.wonders.xlab.pedometer.ui.monthly;
+package com.wonders.xlab.pedometer.ui.month;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -38,7 +38,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.pm_monthly_fragment, container, false);
+        return inflater.inflate(R.layout.pm_month_fragment, container, false);
     }
 
     @Override

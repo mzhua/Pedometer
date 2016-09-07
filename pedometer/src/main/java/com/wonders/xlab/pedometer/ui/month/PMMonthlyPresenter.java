@@ -1,4 +1,4 @@
-package com.wonders.xlab.pedometer.ui.monthly;
+package com.wonders.xlab.pedometer.ui.month;
 
 import com.wonders.xlab.pedometer.base.BasePresenter;
 
