@@ -44,7 +44,7 @@ public class PMDailyBarChart extends View {
 
     private Paint mBarPaint;
     private TextPaint mTextPaint;
-    private int mBaseLineTimeHeight;
+    private int mNumberTextHeight;
 
     public PMDailyBarChart(Context context) {
         super(context);
@@ -95,7 +95,7 @@ public class PMDailyBarChart extends View {
         mTextPaint.setColor(Color.GRAY);
         mTextPaint.setTextSize(DensityUtil.sp2px(context, 12));
         mTextPaint.getTextBounds("0", 0, 1, mTempTextBoundRect);
-        mBaseLineTimeHeight = mTempTextBoundRect.height();
+        mNumberTextHeight = mTempTextBoundRect.height();
 
         mBarPaint = new Paint();
         mBarPaint.setColor(Color.parseColor("#328de8"));
@@ -107,7 +107,7 @@ public class PMDailyBarChart extends View {
 
     @SuppressLint("UseSparseArrays")
     public void setDataBeanList(List<PMDataBean> PMDataBeanList) {
-        if (null == PMDataBeanList || PMDataBeanList.size() == 0) {
+        if (null == PMDataBeanList) {
             return;
         }
         if (mStepPMDataBeanList == null) {
@@ -117,14 +117,14 @@ public class PMDailyBarChart extends View {
         }
         mStepPMDataBeanList.addAll(PMDataBeanList);
 
-        Collections.sort(mStepPMDataBeanList, new Comparator<PMDataBean>() {
+        PMDataBean max = Collections.max(mStepPMDataBeanList, new Comparator<PMDataBean>() {
             @Override
             public int compare(PMDataBean o1, PMDataBean o2) {
-                return o1.getStepCounts() > o2.getStepCounts() ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
+                return o1.getStepCounts() < o2.getStepCounts() ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
             }
         });
 
-        mMaxStepValue = (mStepPMDataBeanList.get(0).getStepCounts() / 10 + 1) * 10;//去掉十位数
+        mMaxStepValue = (max.getStepCounts() / 10 + 1) * 10;//去掉十位数
         if (mMaxStepValue < 100) {
             mMaxStepValue = 100;
         }
@@ -137,7 +137,6 @@ public class PMDailyBarChart extends View {
     private int mContentWidth;
     private float mPxPerMinutes;//每分钟对应的横坐标宽度
     private float mBarStrokeWidth;
-    private int offsetBottom;//预留的底部时间的高度s
 
     private float baseLineY;
     private float firstDotLineY;
@@ -148,7 +147,7 @@ public class PMDailyBarChart extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        offsetBottom = 3 * mBaseLineTimeHeight / 2 + getPaddingBottom();
+        int offsetBottom = 3 * mNumberTextHeight / 2 + getPaddingBottom();
         baseLineY = getMeasuredHeight() - mBaseLineWidthInPx / 2 - offsetBottom;
         firstDotLineY = mDotLineWidthInPx / 2 + getPaddingTop();
         secondDotLineY = (firstDotLineY + baseLineY) / 2;
@@ -171,7 +170,7 @@ public class PMDailyBarChart extends View {
 
         drawBar(canvas);
 
-        drawLeftLegend(canvas, firstDotLineY, secondDotLineY);
+        drawLeftLegend(canvas);
     }
 
     /**
@@ -203,16 +202,16 @@ public class PMDailyBarChart extends View {
         }
     }
 
-    private void drawLeftLegend(Canvas canvas, float firstDotLineY, float secondDotLineY) {
+    private void drawLeftLegend(Canvas canvas) {
         mTextPaint.setTextAlign(Paint.Align.LEFT);//drawBaseLineTime也会用到该paint,所以需要重新设置对齐方式
-        canvas.drawText(String.valueOf(mMaxStepValue), getPaddingLeft(), firstDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
-        canvas.drawText(String.valueOf(mMaxStepValue / 2), getPaddingLeft(), secondDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
+        canvas.drawText(String.valueOf(mMaxStepValue), mContentLeft, firstDotLineY + 3 * mNumberTextHeight / 2, mTextPaint);
+        canvas.drawText(String.valueOf(mMaxStepValue / 2), mContentLeft, secondDotLineY + 3 * mNumberTextHeight / 2, mTextPaint);
     }
 
     private void drawBaseLineTime(Canvas canvas) {
         mTextPaint.setTextAlign(Paint.Align.CENTER);//drawLeftLegend也会用到该paint,所以需要重新设置对齐方式
         for (int i = 0; i < 3; i++) {
-            int x = (i + 1) * mContentWidth / 4 + getPaddingLeft();
+            int x = (i + 1) * mContentWidth / 4 + mContentLeft;
             canvas.drawText(StringUtil.autoPrefixStr((i + 1) * 6 + ":00", "0", 5), x, getMeasuredHeight() - getPaddingBottom(), mTextPaint);
         }
     }

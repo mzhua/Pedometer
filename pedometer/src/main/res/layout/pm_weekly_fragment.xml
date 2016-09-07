@@ -5,9 +5,13 @@
                 tools:context="com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment">
 
     <com.wonders.xlab.pedometer.widget.PMWeeklyBarChart
+        android:id="@+id/barChart"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:paddingBottom="40dp"
-        android:paddingLeft="20dp"/>
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="20dp"
+        android:background="@android:color/darker_gray"/>
 
 </RelativeLayout>
