@@ -192,6 +192,8 @@ public class PMDailyRingChart extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        canvas.save();
+
         //translate base point
         tranAndRotateCanvas(canvas);
 
@@ -207,7 +209,7 @@ public class PMDailyRingChart extends View {
         //draw drip indicator
         drawDripIndicator(canvas);
 
-        drawScalesText(canvas);
+        canvas.restore();
 
         drawCenterText(canvas);
 
@@ -219,7 +221,6 @@ public class PMDailyRingChart extends View {
      * @param canvas
      */
     private void drawCenterText(Canvas canvas) {
-        canvas.restore();
 
         int centerX = mCenterPoint.x;
         int centerY = mCenterPoint.y;
@@ -259,12 +260,7 @@ public class PMDailyRingChart extends View {
         return vitality;
     }
 
-    private void drawScalesText(Canvas canvas) {
-
-    }
-
     private void tranAndRotateCanvas(Canvas canvas) {
-        canvas.save();
         canvas.translate(mCenterPoint.x, mCenterPoint.y);
         canvas.rotate(90 + mEmptyAngle / 2);
     }
@@ -281,6 +277,9 @@ public class PMDailyRingChart extends View {
 
     private void drawDividers(Canvas canvas) {
         for (int i = 0; i < DEFAULT_DIVIDER_COUNTS; i++) {
+            /**
+             * 画刻度
+             */
             float radius = Math.abs(mInnerCircleRect.width()) / 2 + mStrokeWidthInnerCircle / 2;
             float currentDividerAngle = i * this.mDividerIntervalAngle;
             if (currentDividerAngle > mSweepAngle) {
@@ -295,6 +294,9 @@ public class PMDailyRingChart extends View {
 
             canvas.save();
 
+            /**
+             * 画刻度对应的数值
+             */
             float textCenterX = (float) ((radius - mDividerLength - 30) * Math.cos(currentDividerRadians));
             float textCenterY = (float) ((radius - mDividerLength - 30) * Math.sin(currentDividerRadians));
             canvas.rotate(90 + currentDividerAngle, textCenterX, textCenterY);
@@ -305,6 +307,7 @@ public class PMDailyRingChart extends View {
 
             int steps = mDividerIntervalStepCounts * i;
             canvas.drawText(String.valueOf(steps), textCenterX, textCenterY, mTextPaint);
+
             canvas.restore();
         }
     }

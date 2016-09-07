@@ -15,6 +15,7 @@ import android.view.View;
 
 import com.wonders.xlab.pedometer.data.PMDataBean;
 import com.wonders.xlab.pedometer.util.DensityUtil;
+import com.wonders.xlab.pedometer.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,13 +30,17 @@ import java.util.List;
 
 public class PMDailyBarChart extends View {
 
+    /**
+     * 每根柱子对应的分钟数
+     */
+    private final int MINUTES_PER_BAR = 14;
     private List<PMDataBean> mStepPMDataBeanList;
 
     private Paint mDotLinePaint;
-    private float mDotLineWithInPx;
+    private float mDotLineWidthInPx;
 
     private Paint mBaseLinePaint;
-    private float mBaseLineWithInPx;
+    private float mBaseLineWidthInPx;
 
     private Paint mBarPaint;
     private TextPaint mTextPaint;
@@ -72,18 +77,18 @@ public class PMDailyBarChart extends View {
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
-        mDotLineWithInPx = DensityUtil.dp2px(context, 1);
+        mDotLineWidthInPx = DensityUtil.dp2px(context, 1);
         mDotLinePaint = new Paint();
         mDotLinePaint.setStyle(Paint.Style.STROKE);
         mDotLinePaint.setColor(Color.GRAY);
-        mDotLinePaint.setStrokeWidth(mDotLineWithInPx);
+        mDotLinePaint.setStrokeWidth(mDotLineWidthInPx);
         mDotLinePaint.setPathEffect(new DashPathEffect(new float[]{10, 5, 10, 5}, 0));
 
-        mBaseLineWithInPx = DensityUtil.dp2px(context, 2);
+        mBaseLineWidthInPx = DensityUtil.dp2px(context, 2);
         mBaseLinePaint = new Paint();
         mBaseLinePaint.setStyle(Paint.Style.STROKE);
         mBaseLinePaint.setColor(Color.parseColor("#328de8"));
-        mBaseLinePaint.setStrokeWidth(mBaseLineWithInPx);
+        mBaseLinePaint.setStrokeWidth(mBaseLineWidthInPx);
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -98,7 +103,7 @@ public class PMDailyBarChart extends View {
         mBarPaint.setStyle(Paint.Style.STROKE);
     }
 
-    private int mMaxStepValue = Integer.MIN_VALUE;
+    private int mMaxStepValue = 100;
 
     @SuppressLint("UseSparseArrays")
     public void setDataBeanList(List<PMDataBean> PMDataBeanList) {
@@ -127,72 +132,88 @@ public class PMDailyBarChart extends View {
         invalidate();
     }
 
+    private int mContentLeft;
+    private int mContentRight;
+    private int mContentWidth;
+    private float mPxPerMinutes;//每分钟对应的横坐标宽度
+    private float mBarStrokeWidth;
+    private int offsetBottom;//预留的底部时间的高度s
+
+    private float baseLineY;
+    private float firstDotLineY;
+    private float secondDotLineY;
+
+    private Calendar calendar = Calendar.getInstance();
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        offsetBottom = 3 * mBaseLineTimeHeight / 2 + getPaddingBottom();
+        baseLineY = getMeasuredHeight() - mBaseLineWidthInPx / 2 - offsetBottom;
+        firstDotLineY = mDotLineWidthInPx / 2 + getPaddingTop();
+        secondDotLineY = (firstDotLineY + baseLineY) / 2;
+
+        mContentLeft = getPaddingLeft();
+        mContentRight = getMeasuredWidth() - getPaddingRight();
+        mContentWidth = mContentRight - mContentLeft;
+        mPxPerMinutes = mContentWidth * 1.0f / 24 / 60;
+        mBarStrokeWidth = mPxPerMinutes * MINUTES_PER_BAR;
+        mBarPaint.setStrokeWidth(mBarStrokeWidth);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int left = getPaddingLeft();
-        int right = getMeasuredWidth() - getPaddingRight();
-
-        int offsetBottom = 3 * mBaseLineTimeHeight / 2 + getPaddingBottom();//预留的底部时间的高度s
-        float baseLineY = getMeasuredHeight() - mBaseLineWithInPx / 2 - offsetBottom;
-        float firstDotLineY = mDotLineWithInPx / 2 + getPaddingTop();
-        float secondDotLineY = (firstDotLineY + baseLineY) / 2;
-
-        canvas.drawLine(left, firstDotLineY, right, firstDotLineY, mDotLinePaint);
-        canvas.drawLine(left, secondDotLineY, right, secondDotLineY, mDotLinePaint);
-        canvas.drawLine(left, baseLineY, right, baseLineY, mBaseLinePaint);
+        drawSplitters(canvas);
 
         drawBaseLineTime(canvas);
 
-        Calendar calendar = Calendar.getInstance();
-        int contentWidth = right - left;
-        float pxPerMinutes = contentWidth * 1.0f / 24 / 60;//每分钟对应的横坐标宽度
-        mBarPaint.setStrokeWidth(pxPerMinutes * 14);
+        drawBar(canvas);
+
+        drawLeftLegend(canvas, firstDotLineY, secondDotLineY);
+    }
+
+    /**
+     * 分割线
+     *
+     * @param canvas
+     */
+    private void drawSplitters(Canvas canvas) {
+        canvas.drawLine(mContentLeft, firstDotLineY, mContentRight, firstDotLineY, mDotLinePaint);
+        canvas.drawLine(mContentLeft, secondDotLineY, mContentRight, secondDotLineY, mDotLinePaint);
+        canvas.drawLine(mContentLeft, baseLineY, mContentRight, baseLineY, mBaseLinePaint);
+    }
+
+    /**
+     * 柱
+     *
+     * @param canvas
+     */
+    private void drawBar(Canvas canvas) {
         if (mStepPMDataBeanList != null && mStepPMDataBeanList.size() > 0) {
             for (PMDataBean PMDataBean : mStepPMDataBeanList) {
                 calendar.setTimeInMillis(PMDataBean.getTimeInMill());
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 int minutes = calendar.get(Calendar.MINUTE);
                 minutes += hour * 60;
-                float x = pxPerMinutes * minutes;
-                canvas.drawLine(left + x, baseLineY, left + x, baseLineY - PMDataBean.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+                float x = mPxPerMinutes * minutes;//转化为相对于0点0分的分钟数,然后x每分钟对应的宽度,得到改时间点对应的x坐标
+                canvas.drawLine(mBarStrokeWidth / 2 + mContentLeft + x, baseLineY, mBarStrokeWidth / 2 + mContentLeft + x, baseLineY - PMDataBean.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
             }
         }
-
-        drawLeftLegend(canvas, firstDotLineY, secondDotLineY);
     }
 
     private void drawLeftLegend(Canvas canvas, float firstDotLineY, float secondDotLineY) {
-        mTextPaint.setTextAlign(Paint.Align.LEFT);
+        mTextPaint.setTextAlign(Paint.Align.LEFT);//drawBaseLineTime也会用到该paint,所以需要重新设置对齐方式
         canvas.drawText(String.valueOf(mMaxStepValue), getPaddingLeft(), firstDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
         canvas.drawText(String.valueOf(mMaxStepValue / 2), getPaddingLeft(), secondDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
     }
 
     private void drawBaseLineTime(Canvas canvas) {
-        mTextPaint.setTextAlign(Paint.Align.CENTER);
-
-        int contentWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
-
+        mTextPaint.setTextAlign(Paint.Align.CENTER);//drawLeftLegend也会用到该paint,所以需要重新设置对齐方式
         for (int i = 0; i < 3; i++) {
-            int x = 0;
-            String timeStr = "06:00";
-            switch (i) {
-                case 0:
-                    x = contentWidth / 4;
-                    timeStr = "06:00";
-                    break;
-                case 1:
-                    x = contentWidth / 2;
-                    timeStr = "12:00";
-                    break;
-                case 2:
-                    x = 3 * contentWidth / 4;
-                    timeStr = "18:00";
-                    break;
-            }
-            x += getPaddingLeft();
-            canvas.drawText(timeStr, x, getMeasuredHeight() - getPaddingBottom(), mTextPaint);
+            int x = (i + 1) * mContentWidth / 4 + getPaddingLeft();
+            canvas.drawText(StringUtil.autoPrefixStr((i + 1) * 6 + ":00", "0", 5), x, getMeasuredHeight() - getPaddingBottom(), mTextPaint);
         }
     }
 }

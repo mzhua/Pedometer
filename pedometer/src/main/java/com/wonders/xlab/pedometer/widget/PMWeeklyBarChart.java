@@ -30,22 +30,28 @@ public class PMWeeklyBarChart extends View {
     private TextPaint mTextPaint;
 
     private int mBaseLineWeekTextHeight;
+    private int mMaxStepValue;
+    private float mBaseLineTimeHeight;
 
     public PMWeeklyBarChart(Context context) {
         super(context);
+        init(context, null);
     }
 
     public PMWeeklyBarChart(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init(context, attrs);
     }
 
     public PMWeeklyBarChart(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init(context, attrs);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public PMWeeklyBarChart(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        init(context, attrs);
     }
 
     private Rect mTempTextBoundRect = new Rect();
@@ -81,8 +87,54 @@ public class PMWeeklyBarChart extends View {
 
     }
 
+    private int mContentLeft;
+    private int mContentRight;
+    private int mContentWidth;
+    private float mBarStrokeWidth;
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mContentLeft = getPaddingLeft();
+        mContentRight = getMeasuredWidth() - getPaddingRight();
+        mContentWidth = mContentRight - mContentLeft;
+        mBarStrokeWidth = mContentWidth / 14;
+        mBarPaint.setStrokeWidth(mBarStrokeWidth);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+    }
+
+    private void drawLeftLegend(Canvas canvas, float firstDotLineY, float secondDotLineY) {
+        mTextPaint.setTextAlign(Paint.Align.LEFT);
+        canvas.drawText(String.valueOf(mMaxStepValue), getPaddingLeft(), firstDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
+        canvas.drawText(String.valueOf(mMaxStepValue / 2), getPaddingLeft(), secondDotLineY + 3 * mBaseLineTimeHeight / 2, mTextPaint);
+    }
+
+    private void drawBaseLineTime(Canvas canvas) {
+        mTextPaint.setTextAlign(Paint.Align.CENTER);
+
+        for (int i = 0; i < 7; i++) {
+            int x = 0;
+            String timeStr = "06:00";
+            switch (i) {
+                case 0:
+                    x = mContentWidth / 4;
+                    timeStr = "06:00";
+                    break;
+                case 1:
+                    x = mContentWidth / 2;
+                    timeStr = "12:00";
+                    break;
+                case 2:
+                    x = 3 * mContentWidth / 4;
+                    timeStr = "18:00";
+                    break;
+            }
+            x += getPaddingLeft();
+            canvas.drawText(timeStr, x, getMeasuredHeight() - getPaddingBottom(), mTextPaint);
+        }
     }
 }

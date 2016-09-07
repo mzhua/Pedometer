@@ -60,7 +60,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
 
         ArrayList<PMDataBean> mStepPMDataBeanList = new ArrayList<>();
         Random random = new Random(System.currentTimeMillis());
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 13; i++) {
             random.setSeed(System.currentTimeMillis() + i);
             int value = random.nextInt(30000);
             mStepPMDataBeanList.add(new PMDataBean(System.currentTimeMillis() + i * 1000 * 60 * 20, value));//隔20分钟
