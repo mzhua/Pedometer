@@ -60,7 +60,7 @@ public class HomeActivity extends BaseActivity {
 
         mCalendarPopupWindow = new CalendarPopupWindow(this);
         mCalendarPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
+        mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 
         mCalendarPopupWindow.setOnDateSelectedListener(new OnDateSelectedListener() {
             @Override
