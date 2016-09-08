@@ -7,4 +7,16 @@
         <attr name="InnerCircleColor" format="color"/>
         <attr name="InnerCircleDashColor" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="XToolBarLayout">
+        <attr name="xtblTitleText" format="string"/>
+        <attr name="xtblTitleColor" format="color"/>
+        <attr name="xtblTitleGravity" format="enum">
+            <enum name="left" value="2"/>
+            <enum name="center" value="4"/>
+        </attr>
+        <attr name="xtblShowTitleSpinner" format="boolean"/>
+        <attr name="xtblBackgroundColor" format="color"/>
+        <attr name="xtblShowDivider" format="boolean"/>
+    </declare-styleable>
 </resources>

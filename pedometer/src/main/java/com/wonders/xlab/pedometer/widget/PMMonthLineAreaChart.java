@@ -132,6 +132,7 @@ public class PMMonthLineAreaChart extends View {
                 return o1 < o2 ? -1 : (o1.equals(o2) ? 0 : 1);
             }
         });
+        mMaxStepValue = (mMaxStepValue / 1000 + 1) * 1000;//去掉十位数
 
         initParams();
 

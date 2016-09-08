@@ -5,4 +5,7 @@
     <color name="textBlack">#212121</color>
     <color name="textGray">#9c9c9c</color>
     <color name="pmAppBlue">#328de8</color>
+    <color name="pmTopBarBackground">@android:color/white</color>
+    <color name="pmTopBarTitleColor">@android:color/black</color>
+    <color name="pmDivider">@android:color/darker_gray</color>
 </resources>

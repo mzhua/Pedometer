@@ -124,10 +124,7 @@ public class PMDailyBarChart extends View {
             }
         });
 
-        mMaxStepValue = (max.getStepCounts() / 10 + 1) * 10;//去掉十位数
-        if (mMaxStepValue < 100) {
-            mMaxStepValue = 100;
-        }
+        mMaxStepValue = (max.getStepCounts() / 1000 + 1) * 1000;//去掉十位数
 
         invalidate();
     }

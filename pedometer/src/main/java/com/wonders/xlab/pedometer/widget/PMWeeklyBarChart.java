@@ -144,6 +144,8 @@ public class PMWeeklyBarChart extends View {
             }
         });
 
+        mMaxStepValue = (mMaxStepValue / 1000 + 1) * 1000;//去掉十位数
+
         initParams();
 
         if (mBarAnimator != null && mBarAnimator.isRunning()) {
