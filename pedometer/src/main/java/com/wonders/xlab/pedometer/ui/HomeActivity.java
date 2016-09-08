@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
@@ -15,10 +16,14 @@ import com.wonders.xlab.pedometer.widget.XToolBarLayout;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static android.R.attr.fillBefore;
+import static android.R.attr.format;
+
 public class HomeActivity extends BaseActivity {
 
     private XToolBarLayout mToolBarLayout;
     private ViewPager mViewPager;
+    private MaterialCalendarView mCalendarView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +31,8 @@ public class HomeActivity extends BaseActivity {
         setContentView(R.layout.activity_home);
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
+        mCalendarView = (MaterialCalendarView) findViewById(R.id.calendarView);
+
 
         SimpleDateFormat format = new SimpleDateFormat("MM月dd日");
         mToolBarLayout.setTitle(format.format(new Date()));

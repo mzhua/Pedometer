@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -140,11 +142,30 @@ public class XToolBarLayout extends LinearLayout {
         });
     }
 
+    private static int getThemeSelectableBackgroundId(Context context) {
+        //Get selectableItemBackgroundBorderless defined for AppCompat
+        int colorAttr = context.getResources().getIdentifier(
+                "selectableItemBackgroundBorderless", "attr", context.getPackageName());
+
+        if (colorAttr == 0) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                colorAttr = android.R.attr.selectableItemBackgroundBorderless;
+            } else {
+                colorAttr = android.R.attr.selectableItemBackground;
+            }
+        }
+
+        TypedValue outValue = new TypedValue();
+        context.getTheme().resolveAttribute(colorAttr, outValue, true);
+        return outValue.resourceId;
+    }
+
     private void updateTitleSpinner() {
         if (mShowTitleSpinner) {
             Drawable spinnerDrawable = getCompatDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
             spinnerDrawable.setBounds(0, 0, spinnerDrawable.getIntrinsicWidth(), spinnerDrawable.getIntrinsicHeight());
             mTitleView.setCompoundDrawables(null, null, spinnerDrawable, null);
+            mTitleView.setBackgroundResource(getThemeSelectableBackgroundId(getContext()));
         } else {
             mTitleView.setCompoundDrawables(null, null, null, null);
         }

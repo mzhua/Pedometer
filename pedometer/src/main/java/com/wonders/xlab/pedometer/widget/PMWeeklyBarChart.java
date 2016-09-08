@@ -80,13 +80,7 @@ public class PMWeeklyBarChart extends View {
 
     private void init(Context context, AttributeSet attrs) {
 
-        mBarXLegendText = new String[]{context.getString(R.string.pm_monday),
-                context.getString(R.string.pm_tuesday),
-                context.getString(R.string.pm_wednesday),
-                context.getString(R.string.pm_thursday),
-                context.getString(R.string.pm_friday),
-                context.getString(R.string.pm_saturday),
-                context.getString(R.string.pm_sunday),};
+        mBarXLegendText = getResources().getStringArray(R.array.pm_week);
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
