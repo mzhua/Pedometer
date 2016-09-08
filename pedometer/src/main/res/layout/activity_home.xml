@@ -17,16 +17,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/xtbl"/>
-
-    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        app:mcv_selectionColor="@color/pmAppBlue"
-        app:mcv_firstDayOfWeek="sunday"
-        app:mcv_weekDayLabels="@array/pm_week"
-        app:mcv_calendarMode="week"
-        app:mcv_showOtherDates="none"
-        />
 </RelativeLayout>
