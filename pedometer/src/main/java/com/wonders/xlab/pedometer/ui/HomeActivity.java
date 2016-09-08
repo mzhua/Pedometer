@@ -124,9 +124,7 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        if (mCalendarPopupWindow.isShowing()) {
-            mCalendarPopupWindow.dismiss();
-        } else {
+        if (!mCalendarPopupWindow.isShowing()) {
             super.onBackPressed();
         }
     }
