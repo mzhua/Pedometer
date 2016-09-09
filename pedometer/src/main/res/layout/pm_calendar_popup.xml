@@ -13,6 +13,8 @@
         android:orientation="vertical"
         app:mcv_arrowColor="@color/pmTopBarTitleColor"
         app:mcv_firstDayOfWeek="sunday"
+        app:mcv_calendarMode="month"
+        app:mcv_showOtherDates="all"
         app:mcv_selectionColor="@color/pmAppBlue"
         app:mcv_weekDayLabels="@array/pm_week"/>
 </android.support.v4.widget.NestedScrollView>

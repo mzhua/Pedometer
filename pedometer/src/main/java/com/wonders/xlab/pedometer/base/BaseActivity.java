@@ -36,7 +36,7 @@ public class BaseActivity extends AppCompatActivity implements BaseContract.View
         Drawable menuItemDrawable = menuItem.getIcon();
         if (menuItemDrawable != null) {
             menuItemDrawable.mutate();
-            menuItemDrawable.setColorFilter(getResources().getColor(R.color.pdTopBarTitleColor), PorterDuff.Mode.SRC_ATOP);
+            menuItemDrawable.setColorFilter(getResources().getColor(R.color.pmTopBarTitleColor), PorterDuff.Mode.SRC_ATOP);
             menuItem.setIcon(menuItemDrawable);
         }
     }
@@ -47,7 +47,7 @@ public class BaseActivity extends AppCompatActivity implements BaseContract.View
      */
     protected void setupMenuText(MenuItem menuItem) {
         SpannableString s = new SpannableString(menuItem.getTitle());
-        s.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.pdTopBarTitleColor)), 0, s.length(), 0);
+        s.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.pmTopBarTitleColor)), 0, s.length(), 0);
         menuItem.setTitle(s);
     }
 

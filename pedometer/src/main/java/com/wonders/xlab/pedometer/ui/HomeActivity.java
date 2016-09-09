@@ -1,5 +1,8 @@
 package com.wonders.xlab.pedometer.ui;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -22,10 +25,14 @@ import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
+import com.wonders.xlab.pedometer.util.FileUtil;
 import com.wonders.xlab.pedometer.widget.CalendarPopupWindow;
 import com.wonders.xlab.pedometer.widget.RelativePopupWindow;
 import com.wonders.xlab.pedometer.widget.XToolBarLayout;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -62,18 +69,18 @@ public class HomeActivity extends BaseActivity {
 
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
-        setupActionBar(mToolBarLayout.getToolbar());
 
-        mToolBarLayout.setOnNavigationClickListener(new XToolBarLayout.OnNavigationClickListener() {
+        setupActionBar(mToolBarLayout.getToolbar());
+        mToolBarLayout.getToolbar().setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick() {
+            public void onClick(View v) {
                 finish();
             }
         });
+
         initTitleView();
         initCalendarPopupWindow();
         initViewPager();
-
     }
 
     private void initViewPager() {
@@ -107,7 +114,7 @@ public class HomeActivity extends BaseActivity {
                 super.onPageSelected(position);
                 switch (position) {
                     case 0:
-                        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
+                        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_LEFT);
                         break;
                     case 1:
                         mToolBarLayout.setTitleView(mWeekTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
@@ -125,8 +132,8 @@ public class HomeActivity extends BaseActivity {
         mWeekTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_week, null, false);
         mMonthTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_month, null, false);
 
-        ((TextView)mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(new Date()));
-        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
+        ((TextView) mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(new Date()));
+        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_LEFT);
 
         mDailyTitleView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,7 +152,7 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
                 mCalendarPopupWindow.dismiss();
-                ((TextView)mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(date.getDate()));
+                ((TextView) mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(date.getDate()));
             }
         });
     }
@@ -159,15 +166,57 @@ public class HomeActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.pm_menu_share,menu);
+        getMenuInflater().inflate(R.menu.pm_menu_share, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        setupMenuIcon(menu.findItem(R.id.menu_share));
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_share) {
-
+            shareViewPager();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void shareViewPager() {
+        if (mViewPager.getDrawingCache() != null) {
+            mViewPager.destroyDrawingCache();
+        }
+        mViewPager.destroyDrawingCache();
+
+        mViewPager.post(new Runnable() {
+            @Override
+            public void run() {
+                mViewPager.setDrawingCacheEnabled(true);
+                mViewPager.buildDrawingCache();
+
+                Bitmap bm = mViewPager.getDrawingCache();
+                FileOutputStream outputStream;
+                try {
+                    File file = FileUtil.createTempFile(HomeActivity.this, "share.jpg");
+                    if (file != null) {
+                        outputStream = new FileOutputStream(file);
+                        bm.compress(Bitmap.CompressFormat.JPEG, 10, outputStream);
+                        shareImage(Uri.parse("file:///" + file.getAbsolutePath()));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void shareImage(Uri uriToImage) {
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uriToImage);
+        shareIntent.setType("image/*");
+        startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.pm_share_to)));
     }
 }

@@ -50,21 +50,11 @@ public class XToolBarLayout extends LinearLayout {
     private String mTitleText;
     private int mBackgroundColor;
 
-    private OnNavigationClickListener mOnNavigationClickListener;
-
-    public void setOnNavigationClickListener(OnNavigationClickListener onNavigationClickListener) {
-        mOnNavigationClickListener = onNavigationClickListener;
-    }
-
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({GRAVITY_TITLE_LEFT, GRAVITY_TITLE_CENTER})
     public @interface TitleGravity {
         int GRAVITY_TITLE_LEFT = 2;
         int GRAVITY_TITLE_CENTER = 4;
-    }
-
-    public interface OnNavigationClickListener {
-        void onClick();
     }
 
     public XToolBarLayout(Context context) {
@@ -102,14 +92,7 @@ public class XToolBarLayout extends LinearLayout {
         }
         mToolbar.setBackgroundColor(mBackgroundColor);
         mToolbar.setTitleTextColor(mTitleColor);
-        mToolbar.setNavigationOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mOnNavigationClickListener) {
-                    mOnNavigationClickListener.onClick();
-                }
-            }
-        });
+
         setupDividerView();
     }
 

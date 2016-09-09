@@ -24,8 +24,6 @@ public class CalendarPopupWindow extends RelativePopupWindow {
 
     private MaterialCalendarView mCalendarView;
     private MaterialCalendarView.StateBuilder mStateBuilder;
-
-
     private OnDateSelectedListener mOnDateSelectedListener;
 
     public CalendarPopupWindow(Context context) {
@@ -74,7 +72,8 @@ public class CalendarPopupWindow extends RelativePopupWindow {
 
     public void setupCalendarView(TitleFormatter titleFormatter, CalendarMode calendarMode) {
         mCalendarView.setTitleFormatter(titleFormatter);
-        mStateBuilder.setCalendarDisplayMode(calendarMode).commit();
+        mStateBuilder.setCalendarDisplayMode(calendarMode)
+                .setMaximumDate(Calendar.getInstance()).commit();
     }
 
     public void setOnDateSelectedListener(OnDateSelectedListener onDateSelectedListener) {
