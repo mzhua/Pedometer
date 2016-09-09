@@ -2,11 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.wonders.xlab.pedometer">
 
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application>
         <activity
             android:name=".ui.HomeActivity"
             android:theme="@style/PMAppTheme.NoActionBar">
         </activity>
+        <service android:name=".service.StepCounterService"/>
     </application>
 
 </manifest>

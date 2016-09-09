@@ -5,7 +5,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.CalendarMode;
@@ -30,8 +35,8 @@ public class HomeActivity extends BaseActivity {
     private ViewPager mViewPager;
     private CalendarPopupWindow mCalendarPopupWindow;
     private DayFormat mDayFormat = new DayFormat();
-    private MonthFormat mMonthFormat = new MonthFormat();
 
+    private SimpleDateFormat mMonthDayFormat;
 
     class DayFormat implements TitleFormatter {
 
@@ -41,44 +46,37 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    class MonthFormat implements TitleFormatter {
-
-        @Override
-        public CharSequence format(CalendarDay day) {
-            return day.getYear() + "年" + (day.getMonth() + 1) + "月";
-        }
-    }
+    private View mDailyTitleView;
+    private View mWeekTitleView;
+    private View mMonthTitleView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        final SimpleDateFormat format = new SimpleDateFormat("MM月dd日");
+
+//        SensorManager manager = (SensorManager) getSystemService(SENSOR_SERVICE);
+//        Toast.makeText(this, "manager.getSensorList(Sensor.TYPE_GYROSCOPE):" + manager.getSensorList(Sensor.TYPE_STEP_DETECTOR).size(), Toast.LENGTH_SHORT).show();
+
+        mMonthDayFormat = new SimpleDateFormat("MM月dd日");
 
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
+        setupActionBar(mToolBarLayout.getToolbar());
 
-        mCalendarPopupWindow = new CalendarPopupWindow(this);
-        mCalendarPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        mCalendarPopupWindow.setOnDateSelectedListener(new OnDateSelectedListener() {
-            @Override
-            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-                mToolBarLayout.setTitle(format.format(date.getDate()));
-                mCalendarPopupWindow.dismiss();
-            }
-        });
-
-        mToolBarLayout.setTitle(format.format(new Date()));
-        mToolBarLayout.setShowTitleSpinner(true);
-        mToolBarLayout.setOnTitleClickListener(new XToolBarLayout.OnTitleClickListener() {
+        mToolBarLayout.setOnNavigationClickListener(new XToolBarLayout.OnNavigationClickListener() {
             @Override
             public void onClick() {
-                mCalendarPopupWindow.showOnAnchor(mToolBarLayout, RelativePopupWindow.VerticalPosition.ALIGN_TOP, RelativePopupWindow.HorizontalPosition.LEFT);
+                finish();
             }
         });
+        initTitleView();
+        initCalendarPopupWindow();
+        initViewPager();
 
+    }
+
+    private void initViewPager() {
         mViewPager.setAdapter(new FragmentStatePagerAdapter(getSupportFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
@@ -109,15 +107,45 @@ public class HomeActivity extends BaseActivity {
                 super.onPageSelected(position);
                 switch (position) {
                     case 0:
-                        mCalendarPopupWindow.setupCalendarView(mDayFormat, CalendarMode.MONTHS);
+                        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
                         break;
                     case 1:
-                        mCalendarPopupWindow.setupCalendarView(mDayFormat, CalendarMode.WEEKS);
+                        mToolBarLayout.setTitleView(mWeekTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
                         break;
                     case 2:
-                        mCalendarPopupWindow.setupCalendarView(mMonthFormat, CalendarMode.MONTHS);
+                        mToolBarLayout.setTitleView(mMonthTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
                         break;
                 }
+            }
+        });
+    }
+
+    private void initTitleView() {
+        mDailyTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_daily, null, false);
+        mWeekTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_week, null, false);
+        mMonthTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_month, null, false);
+
+        ((TextView)mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(new Date()));
+        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
+
+        mDailyTitleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCalendarPopupWindow.showOnAnchor(mToolBarLayout, RelativePopupWindow.VerticalPosition.ALIGN_TOP, RelativePopupWindow.HorizontalPosition.LEFT);
+            }
+        });
+    }
+
+    private void initCalendarPopupWindow() {
+        mCalendarPopupWindow = new CalendarPopupWindow(this);
+        mCalendarPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mCalendarPopupWindow.setupCalendarView(mDayFormat, CalendarMode.MONTHS);
+        mCalendarPopupWindow.setOnDateSelectedListener(new OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
+                mCalendarPopupWindow.dismiss();
+                ((TextView)mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(date.getDate()));
             }
         });
     }
@@ -127,5 +155,19 @@ public class HomeActivity extends BaseActivity {
         if (!mCalendarPopupWindow.isShowing()) {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.pm_menu_share,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_share) {
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

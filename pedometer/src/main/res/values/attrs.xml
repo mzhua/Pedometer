@@ -18,5 +18,6 @@
         <attr name="xtblShowTitleSpinner" format="boolean"/>
         <attr name="xtblBackgroundColor" format="color"/>
         <attr name="xtblShowDivider" format="boolean"/>
+        <attr name="xtblShowNavigation" format="boolean"/>
     </declare-styleable>
 </resources>

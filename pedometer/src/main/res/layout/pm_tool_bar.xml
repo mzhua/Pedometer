@@ -9,13 +9,5 @@
     app:background="@color/pmTopBarBackground"
     app:popupTheme="@style/AppTheme.PopupOverlay">
 
-    <TextView
-        android:id="@+id/toolbar_title"
-        style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="@string/pm_app_name"
-        android:textColor="@color/pmTopBarTitleColor"/>
+
 </android.support.v7.widget.Toolbar>

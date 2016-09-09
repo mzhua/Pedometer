@@ -19,7 +19,6 @@ import android.support.annotation.IntRange;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 import com.wonders.xlab.pedometer.R;
@@ -164,7 +163,7 @@ public class PMDailyRingChart extends View {
         mDividerPaint.setStrokeWidth(3);
 
         mDripBitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mDripBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_drip);
+        mDripBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pm_ic_drip);
         mDripWidth = mDripBitmap.getWidth();
         mDripHeight = mDripBitmap.getHeight();
         mDripMatrix = new Matrix();

@@ -17,13 +17,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER;
+import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleGravity.GRAVITY_TITLE_LEFT;
 
 /**
  * Created by hua on 16/8/26.
@@ -32,27 +34,23 @@ public class XToolBarLayout extends LinearLayout {
     private Context mContext;
     private final float DIVIDER_HEIGHT_DEFAULT = 0.8f;
 
-    private static final int GRAVITY_TITLE_MASK = 1;
-    public static final int GRAVITY_TITLE_LEFT = GRAVITY_TITLE_MASK << 1;
-    public static final int GRAVITY_TITLE_CENTER = GRAVITY_TITLE_MASK << 2;
+//    private static final int GRAVITY_TITLE_MASK = 1;
+//    public static final int GRAVITY_TITLE_LEFT = GRAVITY_TITLE_MASK << 1;
+//    public static final int GRAVITY_TITLE_CENTER = GRAVITY_TITLE_MASK << 2;
 
     private Toolbar mToolbar;
-    private TextView mTitleView;
+    private View mTitleView;
     private View mDividerView;
 
     private boolean mShowDivider;
     private int mTitleGravity;
     private int mTitleColor;
     private boolean mShowTitleSpinner;
+    private boolean mShowNavigation = true;
     private String mTitleText;
     private int mBackgroundColor;
 
-    private OnTitleClickListener mOnTitleClickListener;
     private OnNavigationClickListener mOnNavigationClickListener;
-
-    public void setOnTitleClickListener(OnTitleClickListener onTitleClickListener) {
-        mOnTitleClickListener = onTitleClickListener;
-    }
 
     public void setOnNavigationClickListener(OnNavigationClickListener onNavigationClickListener) {
         mOnNavigationClickListener = onNavigationClickListener;
@@ -61,10 +59,8 @@ public class XToolBarLayout extends LinearLayout {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({GRAVITY_TITLE_LEFT, GRAVITY_TITLE_CENTER})
     public @interface TitleGravity {
-    }
-
-    public interface OnTitleClickListener {
-        void onClick();
+        int GRAVITY_TITLE_LEFT = 2;
+        int GRAVITY_TITLE_CENTER = 4;
     }
 
     public interface OnNavigationClickListener {
@@ -94,11 +90,16 @@ public class XToolBarLayout extends LinearLayout {
         mBackgroundColor = array.getColor(R.styleable.XToolBarLayout_xtblBackgroundColor, ContextCompat.getColor(context, R.color.pmTopBarBackground));
         mShowDivider = array.getBoolean(R.styleable.XToolBarLayout_xtblShowDivider, false);
         mShowTitleSpinner = array.getBoolean(R.styleable.XToolBarLayout_xtblShowTitleSpinner, false);
+        mShowNavigation = array.getBoolean(R.styleable.XToolBarLayout_xtblShowNavigation, false);
         array.recycle();
 
-        mToolbar = (Toolbar) LayoutInflater.from(context).inflate(R.layout.cb_tool_bar, this, false);
+        mToolbar = (Toolbar) LayoutInflater.from(context).inflate(R.layout.pm_tool_bar, this, false);
         addView(mToolbar);
-        setNavigationIcon(getResources().getDrawable(R.drawable.ic_arrow_back_black_24dp));
+        if (mShowNavigation) {
+            setNavigationIcon(getResources().getDrawable(R.drawable.pm_ic_arrow_back_black));
+        } else {
+            hideNavigationIcon();
+        }
         mToolbar.setBackgroundColor(mBackgroundColor);
         mToolbar.setTitleTextColor(mTitleColor);
         mToolbar.setNavigationOnClickListener(new OnClickListener() {
@@ -109,20 +110,24 @@ public class XToolBarLayout extends LinearLayout {
                 }
             }
         });
-        setupTitleView();
-
         setupDividerView();
     }
 
-    private void setupTitleView() {
-        mTitleView = (TextView) mToolbar.findViewById(R.id.toolbar_title);
-        updateTitleSpinner();
-        mTitleView.setTextColor(mTitleColor);
-        mTitleView.setText(mTitleText);
+    public void setTitleView(@NonNull View titleView, @TitleGravity int titleViewGravity) {
+        this.mTitleGravity = titleViewGravity;
+        if (mTitleView != null) {
+            mToolbar.removeView(mTitleView);
+        }
+        mTitleView = titleView;
+        mToolbar.addView(titleView);
+
+        titleView.setBackgroundResource(getThemeSelectableBackgroundId(mContext));
+
         Toolbar.LayoutParams layoutParams = (Toolbar.LayoutParams) mTitleView.getLayoutParams();
         if (layoutParams == null) {
-            layoutParams = new Toolbar.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams = new Toolbar.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
         }
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
         switch (mTitleGravity) {
             case GRAVITY_TITLE_CENTER:
                 layoutParams.gravity = Gravity.CENTER;
@@ -131,15 +136,6 @@ public class XToolBarLayout extends LinearLayout {
                 layoutParams.gravity = Gravity.CENTER_VERTICAL | Gravity.LEFT;
                 break;
         }
-
-        mTitleView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mOnTitleClickListener != null) {
-                    mOnTitleClickListener.onClick();
-                }
-            }
-        });
     }
 
     private static int getThemeSelectableBackgroundId(Context context) {
@@ -160,17 +156,6 @@ public class XToolBarLayout extends LinearLayout {
         return outValue.resourceId;
     }
 
-    private void updateTitleSpinner() {
-        if (mShowTitleSpinner) {
-            Drawable spinnerDrawable = getCompatDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
-            spinnerDrawable.setBounds(0, 0, spinnerDrawable.getIntrinsicWidth(), spinnerDrawable.getIntrinsicHeight());
-            mTitleView.setCompoundDrawables(null, null, spinnerDrawable, null);
-            mTitleView.setBackgroundResource(getThemeSelectableBackgroundId(getContext()));
-        } else {
-            mTitleView.setCompoundDrawables(null, null, null, null);
-        }
-    }
-
     private void setupDividerView() {
         if (mShowDivider) {
             if (mDividerView == null) {
@@ -188,25 +173,8 @@ public class XToolBarLayout extends LinearLayout {
         }
     }
 
-    public void setShowTitleSpinner(boolean showTitleSpinner) {
-        this.mShowTitleSpinner = showTitleSpinner;
-        updateTitleSpinner();
-    }
-
     public Toolbar getToolbar() {
         return mToolbar;
-    }
-
-    public void setTitleGravity(int titleGravity) {
-        mTitleGravity = titleGravity;
-    }
-
-    public void setTitleColor(int titleColor) {
-        mTitleColor = titleColor;
-    }
-
-    public void setTitle(@NonNull String title) {
-        mTitleView.setText(title);
     }
 
     @Override
@@ -215,6 +183,7 @@ public class XToolBarLayout extends LinearLayout {
     }
 
     public void setNavigationIcon(Drawable drawable) {
+        mShowNavigation = (drawable != null);
         getToolbar().setNavigationIcon(getCompatDrawable(drawable));
     }
 
@@ -224,7 +193,10 @@ public class XToolBarLayout extends LinearLayout {
      * @param drawable
      * @return
      */
-    public Drawable getCompatDrawable(@NonNull Drawable drawable) {
+    public Drawable getCompatDrawable(Drawable drawable) {
+        if (drawable == null) {
+            return null;
+        }
         Drawable stateButtonDrawable = drawable.mutate();
         stateButtonDrawable.setColorFilter(mTitleColor, PorterDuff.Mode.SRC_ATOP);
         return stateButtonDrawable;

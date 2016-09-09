@@ -1,0 +1,12 @@
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvDailyTitle"
+    style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:clickable="true"
+    android:drawableRight="@drawable/pm_ic_arrow_drop_down_black"
+    android:focusable="true"
+    android:gravity="center"
+    android:textColor="@color/pmTopBarTitleColor"/>

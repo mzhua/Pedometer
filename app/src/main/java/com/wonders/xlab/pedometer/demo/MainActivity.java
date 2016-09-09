@@ -2,13 +2,16 @@ package com.wonders.xlab.pedometer.demo;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
+import com.wonders.xlab.pedometer.service.StepCounterService;
 import com.wonders.xlab.pedometer.ui.HomeActivity;
 import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
@@ -19,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        TextView stepCounts = (TextView) findViewById(R.id.tvStepCounts);
+        stepCounts.setText(String.format("当前步数:%d", PreferenceManager.getDefaultSharedPreferences(this).getInt("steps", 0)));
         mPMDailyRingChart = (PMDailyRingChart) findViewById(R.id.walkChart);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -30,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, HomeActivity.class));
             }
         });
+
+        startService(new Intent(this, StepCounterService.class));
     }
 
     @Override
