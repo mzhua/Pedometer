@@ -27,7 +27,7 @@ import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.WEEK;
  */
 
 public class PMStepCount {
-    private final int INTERVAL_MINUTES = 1;//1m
+    private final int INTERVAL_MINUTES = 20;//1m
     /**
      * 保存记录时,在这个时间差范围内的记录合并为一条
      */
@@ -139,7 +139,7 @@ public class PMStepCount {
                 groupBy = StepCountEntry.COLUMN_NAME_DAY;
                 break;
         }
-        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjection, null, null, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
+        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
 
         List<PMStepCountEntity> entityList = null;
         if (cursor.moveToFirst()) {

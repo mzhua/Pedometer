@@ -8,12 +8,11 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMStepCount;
-
-import java.util.Calendar;
 
 /**
  * Created by hua on 16/9/9.
@@ -83,8 +82,9 @@ public class StepCounterService extends Service {
      * 步数加一
      */
     private void increaseStepCountByOne(SensorEvent event) {
-        Toast.makeText(StepCounterService.this, "step", Toast.LENGTH_SHORT).show();
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity((long) (event.timestamp * Math.pow(10,-6)), 1));
+        long timeInMillis = System.currentTimeMillis()
+                + (event.timestamp - System.nanoTime()) / 1000000L;
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(timeInMillis, 1));
 
     }
 
