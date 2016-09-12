@@ -8,11 +8,15 @@ import android.view.ViewGroup;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
-import com.wonders.xlab.pedometer.data.PMDataBean;
+import com.wonders.xlab.pedometer.data.PMStepCountEntity;
+import com.wonders.xlab.pedometer.data.PMStepCountModel;
+import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.widget.PMDailyBarChart;
 import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
 public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PMDailyContract.View {
@@ -33,7 +37,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
     @Override
     public PMDailyPresenter getPresenter() {
         if (null == mPresenter) {
-            mPresenter = new PMDailyPresenter(this, new PMDailyModel());
+            mPresenter = new PMDailyPresenter(this, new PMStepCountModel(PMStepCount.getInstance(getActivity())));
         }
         return mPresenter;
     }
@@ -56,16 +60,33 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
         mBarChart = (PMDailyBarChart) view.findViewById(R.id.barChart);
         mRingChart = (PMDailyRingChart) view.findViewById(R.id.walkChart);
 
-        mRingChart.startWithStepCounts(34567);
+        getPresenter().getDatas(getStartTimeInMillOfDay(System.currentTimeMillis()),getEndTimeInMillOfDay(System.currentTimeMillis()), PMStepCount.DataType.DAY);
+    }
 
-        ArrayList<PMDataBean> mStepPMDataBeanList = new ArrayList<>();
-        Random random = new Random(System.currentTimeMillis());
-        for (int i = 0; i < 13; i++) {
-            random.setSeed(System.currentTimeMillis() + i);
-            int value = random.nextInt(30000);
-            mStepPMDataBeanList.add(new PMDataBean(System.currentTimeMillis() + i * 1000 * 60 * 20, value));//隔20分钟
-        }
+    private long getStartTimeInMillOfDay(long anyTimeOfDayInMill){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(anyTimeOfDayInMill);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        return calendar.getTimeInMillis();
+    }
 
-        mBarChart.setDataBeanList(mStepPMDataBeanList);
+    private long getEndTimeInMillOfDay(long anyTimeOfDayInMill){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(anyTimeOfDayInMill);
+        calendar.set(Calendar.HOUR_OF_DAY,23);
+        calendar.set(Calendar.MINUTE,59);
+        calendar.set(Calendar.SECOND,59);
+        calendar.set(Calendar.MILLISECOND,999);
+        return calendar.getTimeInMillis();
+    }
+
+    @Override
+    public void showDailyData(int totalStepCounts, int calorie, int distanceInKm, List<PMStepCountEntity> entityList) {
+        mRingChart.startWithStepCounts(totalStepCounts);
+
+        mBarChart.setDataBeanList(entityList);
     }
 }

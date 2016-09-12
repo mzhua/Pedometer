@@ -13,7 +13,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.wonders.xlab.pedometer.data.PMDataBean;
+import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 import com.wonders.xlab.pedometer.util.StringUtil;
 
@@ -34,7 +34,7 @@ public class PMDailyBarChart extends View {
      * 每根柱子对应的分钟数
      */
     private final int MINUTES_PER_BAR = 14;
-    private List<PMDataBean> mStepPMDataBeanList;
+    private List<PMStepCountEntity> mStepPMStepCountEntityList;
 
     private Paint mDotLinePaint;
     private float mDotLineWidthInPx;
@@ -106,25 +106,27 @@ public class PMDailyBarChart extends View {
     private int mMaxStepValue = 100;
 
     @SuppressLint("UseSparseArrays")
-    public void setDataBeanList(List<PMDataBean> PMDataBeanList) {
-        if (null == PMDataBeanList) {
-            return;
-        }
-        if (mStepPMDataBeanList == null) {
-            mStepPMDataBeanList = new ArrayList<>();
+    public void setDataBeanList(List<PMStepCountEntity> PMStepCountEntityList) {
+
+        if (mStepPMStepCountEntityList == null) {
+            mStepPMStepCountEntityList = new ArrayList<>();
         } else {
-            mStepPMDataBeanList.clear();
+            mStepPMStepCountEntityList.clear();
         }
-        mStepPMDataBeanList.addAll(PMDataBeanList);
+        if (null != PMStepCountEntityList) {
+            mStepPMStepCountEntityList.addAll(PMStepCountEntityList);
+        }
 
-        PMDataBean max = Collections.max(mStepPMDataBeanList, new Comparator<PMDataBean>() {
-            @Override
-            public int compare(PMDataBean o1, PMDataBean o2) {
-                return o1.getStepCounts() < o2.getStepCounts() ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
-            }
-        });
+        if (mStepPMStepCountEntityList.size() > 0) {
+            PMStepCountEntity max = Collections.max(mStepPMStepCountEntityList, new Comparator<PMStepCountEntity>() {
+                @Override
+                public int compare(PMStepCountEntity o1, PMStepCountEntity o2) {
+                    return o1.getStepCounts() < o2.getStepCounts() ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
+                }
+            });
 
-        mMaxStepValue = (max.getStepCounts() / 1000 + 1) * 1000;//去掉十位数
+            mMaxStepValue = (max.getStepCounts() / 1000 + 1) * 1000;//去掉十位数
+        }
 
         invalidate();
     }
@@ -187,14 +189,14 @@ public class PMDailyBarChart extends View {
      * @param canvas
      */
     private void drawBar(Canvas canvas) {
-        if (mStepPMDataBeanList != null && mStepPMDataBeanList.size() > 0) {
-            for (PMDataBean PMDataBean : mStepPMDataBeanList) {
-                calendar.setTimeInMillis(PMDataBean.getTimeInMill());
+        if (mStepPMStepCountEntityList != null && mStepPMStepCountEntityList.size() > 0) {
+            for (PMStepCountEntity PMStepCountEntity : mStepPMStepCountEntityList) {
+                calendar.setTimeInMillis(PMStepCountEntity.getUpdateTimeInMill());
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 int minutes = calendar.get(Calendar.MINUTE);
                 minutes += hour * 60;
                 float x = mPxPerMinutes * minutes;//转化为相对于0点0分的分钟数,然后x每分钟对应的宽度,得到改时间点对应的x坐标
-                canvas.drawLine(mBarStrokeWidth / 2 + mContentLeft + x, baseLineY, mBarStrokeWidth / 2 + mContentLeft + x, baseLineY - PMDataBean.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
+                canvas.drawLine(mBarStrokeWidth / 2 + mContentLeft + x, baseLineY, mBarStrokeWidth / 2 + mContentLeft + x, baseLineY - PMStepCountEntity.getStepCounts() * 1.0f / mMaxStepValue * (baseLineY - firstDotLineY), mBarPaint);
             }
         }
     }

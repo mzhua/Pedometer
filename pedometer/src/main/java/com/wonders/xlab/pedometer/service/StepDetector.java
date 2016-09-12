@@ -73,7 +73,7 @@ public class StepDetector implements SensorEventListener {
                             if (isAlmostAsLargeAsPrevious && isPreviousLargeEnough && isNotContra) {
                                 Log.i(TAG, "step");
                                 for (StepListener stepListener : mStepListeners) {
-                                    stepListener.onStep();
+                                    stepListener.onStep(event);
                                 }
                                 mLastMatch = extType;
                             } else {

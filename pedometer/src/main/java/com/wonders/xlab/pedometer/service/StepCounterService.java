@@ -1,15 +1,19 @@
 package com.wonders.xlab.pedometer.service;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.preference.PreferenceManager;
 import android.widget.Toast;
+
+import com.wonders.xlab.pedometer.data.PMStepCountEntity;
+import com.wonders.xlab.pedometer.db.PMStepCount;
+
+import java.util.Calendar;
 
 /**
  * Created by hua on 16/9/9.
@@ -19,10 +23,7 @@ public class StepCounterService extends Service {
     public static Boolean FLAG = false;// 服务运行标志
 
     private SensorManager mSensorManager;// 传感器服务
-    private StepDetector detector;// 传感器监听对象
-
-    private PowerManager mPowerManager;// 电源管理服务
-    private PowerManager.WakeLock mWakeLock;// 屏幕灯
+    private SensorEventListener mSensorEventListener;// 传感器监听对象
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -30,59 +31,69 @@ public class StepCounterService extends Service {
         return null;
     }
 
-    private SharedPreferences preferences;
-    SharedPreferences.Editor edit;
-
     @Override
     public void onCreate() {
         // TODO Auto-generated method stub
         super.onCreate();
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        edit = preferences.edit();
-
         FLAG = true;// 标记为服务正在运行
-
-        // 创建监听器类，实例化监听对象
-        detector = new StepDetector();
-        detector.addStepListener(new StepListener() {
-            @Override
-            public void onStep() {
-                edit.putInt("steps", preferences.getInt("steps", 0) + 1).apply();
-            }
-
-            @Override
-            public void passValue() {
-
-            }
-        });
 
         // 获取传感器的服务，初始化传感器
         mSensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
         // 注册传感器，注册监听器
-        mSensorManager.registerListener(detector,
-                mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_NORMAL);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null) {
+            OfficialStepDetector detector = new OfficialStepDetector();
+            mSensorManager.registerListener(detector,
+                    mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
+                    SensorManager.SENSOR_DELAY_FASTEST);
 
-        // 电源管理服务
-        mPowerManager = (PowerManager) this
-                .getSystemService(Context.POWER_SERVICE);
-        mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK
-                | PowerManager.ACQUIRE_CAUSES_WAKEUP, "S");
-        mWakeLock.acquire();
+            mSensorEventListener = detector;
+        } else {
+            // 创建监听器类，实例化监听对象
+            StepDetector detector = new StepDetector();
+            detector.addStepListener(new StepListener() {
+                @Override
+                public void onStep(SensorEvent event) {
+                    increaseStepCountByOne(event);
+                }
+            });
+            mSensorEventListener = detector;
+
+            mSensorManager.registerListener(detector,
+                    mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_FASTEST);
+        }
+
+
+    }
+
+    class OfficialStepDetector implements SensorEventListener {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            increaseStepCountByOne(event);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    }
+
+    /**
+     * 步数加一
+     */
+    private void increaseStepCountByOne(SensorEvent event) {
+        Toast.makeText(StepCounterService.this, "step", Toast.LENGTH_SHORT).show();
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity((long) (event.timestamp * Math.pow(10,-6)), 1));
+
     }
 
     @Override
     public void onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy();
         FLAG = false;// 服务停止
-        if (detector != null) {
-            mSensorManager.unregisterListener(detector);
-        }
-
-        if (mWakeLock != null) {
-            mWakeLock.release();
+        if (mSensorEventListener != null) {
+            mSensorManager.unregisterListener(mSensorEventListener);
         }
     }
 }

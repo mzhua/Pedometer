@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
+import com.wonders.xlab.pedometer.data.PMStepCountModel;
+import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChart;
 
 import java.util.ArrayList;
@@ -19,7 +21,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     @Override
     public PMWeeklyPresenter getPresenter() {
         if (null == mPresenter) {
-            mPresenter = new PMWeeklyPresenter(this, new PMWeeklyModel());
+            mPresenter = new PMWeeklyPresenter(this, new PMStepCountModel(PMStepCount.getInstance(getActivity())));
         }
         return mPresenter;
     }

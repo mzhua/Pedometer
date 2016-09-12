@@ -229,8 +229,8 @@ public class PMDailyRingChart extends View {
         mTextPaint.setColor(Color.parseColor("#212121"));
         mTextPaint.setTextSize(DensityUtil.sp2px(getContext(), 18));
         mTextPaint.setTextAlign(Paint.Align.CENTER);
-        mTextPaint.getTextBounds("今日步数", 0, 1, mTempRectBounds);
-        canvas.drawText("今日步数", centerX, centerY - innerCircleRadius / 2, mTextPaint);
+        mTextPaint.getTextBounds(getContext().getString(R.string.pm_daily_ring_chart_step_counts_sum), 0, 1, mTempRectBounds);
+        canvas.drawText(getContext().getString(R.string.pm_daily_ring_chart_step_counts_sum), centerX, centerY - innerCircleRadius / 2, mTextPaint);
 
         mTextPaint.setColor(Color.parseColor("#388FE5"));
         mTextPaint.setTextSize(DensityUtil.sp2px(getContext(), 32));

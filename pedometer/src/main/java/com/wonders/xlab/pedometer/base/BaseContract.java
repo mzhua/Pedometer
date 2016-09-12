@@ -1,5 +1,7 @@
 package com.wonders.xlab.pedometer.base;
 
+import android.support.annotation.NonNull;
+
 /**
  * Created by hua on 16/8/19.
  */
@@ -16,7 +18,7 @@ public interface BaseContract {
         interface Callback<T> {
             void onSuccess(T t);
 
-            void onFail(DefaultException e);
+            void onFail(@NonNull DefaultException e);
         }
 
         void onDestroy();

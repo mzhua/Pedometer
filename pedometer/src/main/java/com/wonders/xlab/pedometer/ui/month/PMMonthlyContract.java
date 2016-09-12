@@ -10,12 +10,4 @@ public interface PMMonthlyContract {
     interface View extends BaseContract.View {
 
     }
-
-    interface Presenter extends BaseContract.Presenter {
-
-    }
-
-    interface Model extends BaseContract.Model {
-
-    }
 }

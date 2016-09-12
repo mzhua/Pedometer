@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.CalendarMode;
@@ -22,6 +23,8 @@ import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.format.TitleFormatter;
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.BaseActivity;
+import com.wonders.xlab.pedometer.data.PMStepCountEntity;
+import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
@@ -34,7 +37,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class HomeActivity extends BaseActivity {
 

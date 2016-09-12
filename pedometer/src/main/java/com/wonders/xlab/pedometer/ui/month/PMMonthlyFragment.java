@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
+import com.wonders.xlab.pedometer.data.PMStepCountModel;
+import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.widget.PMMonthLineAreaChart;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     @Override
     public PMMonthlyPresenter getPresenter() {
         if (null == mPresenter) {
-            mPresenter = new PMMonthlyPresenter(this, new PMMonthlyModel());
+            mPresenter = new PMMonthlyPresenter(this, new PMStepCountModel(PMStepCount.getInstance(getActivity())));
         }
         return mPresenter;
     }
