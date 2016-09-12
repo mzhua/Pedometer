@@ -139,7 +139,7 @@ public class PMStepCount {
                 groupBy = StepCountEntry.COLUMN_NAME_DAY;
                 break;
         }
-        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
+        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " ASC");
 
         List<PMStepCountEntity> entityList = null;
         if (cursor.moveToFirst()) {

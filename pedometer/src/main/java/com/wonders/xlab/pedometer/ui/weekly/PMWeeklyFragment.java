@@ -13,6 +13,7 @@ import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChart;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements PMWeeklyContract.View {
     private PMWeeklyBarChart mBarChart;
@@ -51,11 +52,10 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mBarChart = (PMWeeklyBarChart) view.findViewById(R.id.barChart);
-        ArrayList<Integer> data = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {
-            data.add(i * 10000 + i * 1000);
-        }
-        mBarChart.setDataBean(data);
     }
 
+    @Override
+    public void showDailyData(int avgStepCounts, int totalStepCounts, List<Integer> dataList) {
+        mBarChart.setDataBean(dataList);
+    }
 }
