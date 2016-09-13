@@ -40,7 +40,7 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepCountContr
                     }
                     avgStep = sumStep / pmStepCountEntities.size();
                 }
-                mView.showDailyData(avgStep, sumStep, dataList);
+                mView.showDailyData(avgStep, sumStep, pmStepCountEntities);
             }
 
             @Override

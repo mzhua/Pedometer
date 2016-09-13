@@ -22,6 +22,7 @@ import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -52,10 +53,11 @@ public class PMWeeklyBarChart extends View {
     private int mMaxStepValue = DEFAULT_MAX_STEP_VALUE;
 
     private String[] mBarXLegendText;
+    private int mFirstDayOfWeek = Calendar.MONDAY;
     /**
      * data source
      */
-    private List<Integer> mDataBeanList;
+//    private List<Integer> mDataBeanList;
     private List<PMStepCountEntity> mDataList;
 
     public PMWeeklyBarChart(Context context) {
@@ -83,7 +85,11 @@ public class PMWeeklyBarChart extends View {
 
     private void init(Context context, AttributeSet attrs) {
 
-        mBarXLegendText = getResources().getStringArray(R.array.pm_week);
+        if (mFirstDayOfWeek == Calendar.SUNDAY) {
+            mBarXLegendText = getResources().getStringArray(R.array.pm_week_sunday);
+        } else {
+            mBarXLegendText = getResources().getStringArray(R.array.pm_week);
+        }
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
@@ -125,25 +131,32 @@ public class PMWeeklyBarChart extends View {
     private ValueAnimator mBarAnimator;
 
     public void setDataBeanList(List<PMStepCountEntity> dataList) {
-        if (dataList == null) {
-            return;
-        }
+
         if (mDataList == null) {
             mDataList = new ArrayList<>();
         } else {
             mDataList.clear();
         }
-        mDataList.addAll(dataList);
-        PMStepCountEntity tmpMax = Collections.max(mDataList, new Comparator<PMStepCountEntity>() {
-            @Override
-            public int compare(PMStepCountEntity o1, PMStepCountEntity o2) {
-                return (o1.getStepCounts() < o2.getStepCounts()) ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
+        if (dataList != null) {
+            mDataList.addAll(dataList);
+            if (dataList.size() > 0) {
+                PMStepCountEntity tmpMax = Collections.max(mDataList, new Comparator<PMStepCountEntity>() {
+                    @Override
+                    public int compare(PMStepCountEntity o1, PMStepCountEntity o2) {
+                        return (o1.getStepCounts() < o2.getStepCounts()) ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
+                    }
+                });
+                mMaxStepValue = tmpMax.getStepCounts();
             }
-        });
-        mMaxStepValue = tmpMax.getStepCounts();
+        }
+
         mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
         initParams();
 
+        startAnimator();
+    }
+
+    private void startAnimator() {
         if (mBarAnimator != null && mBarAnimator.isRunning()) {
             mBarAnimator.cancel();
         }
@@ -161,40 +174,40 @@ public class PMWeeklyBarChart extends View {
     }
 
     public void setDataBean(List<Integer> dataBeanList) {
-        if (dataBeanList == null) {
-            return;
-        }
-        if (mDataBeanList == null) {
-            mDataBeanList = new ArrayList<>();
-        } else {
-            mDataBeanList.clear();
-        }
-        mDataBeanList.addAll(dataBeanList);
-        mMaxStepValue = Collections.max(mDataBeanList, new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o1 < o2 ? -1 : (o1.equals(o2) ? 0 : 1);
-            }
-        });
-
-        mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
-
-        initParams();
-
-        if (mBarAnimator != null && mBarAnimator.isRunning()) {
-            mBarAnimator.cancel();
-        }
-        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
-        mBarAnimator.setDuration(800);
-        mBarAnimator.setInterpolator(new DecelerateInterpolator());
-        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBarHeightFraction = animation.getAnimatedFraction();
-                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
-            }
-        });
-        mBarAnimator.start();
+//        if (dataBeanList == null) {
+//            return;
+//        }
+//        if (mDataBeanList == null) {
+//            mDataBeanList = new ArrayList<>();
+//        } else {
+//            mDataBeanList.clear();
+//        }
+//        mDataBeanList.addAll(dataBeanList);
+//        mMaxStepValue = Collections.max(mDataBeanList, new Comparator<Integer>() {
+//            @Override
+//            public int compare(Integer o1, Integer o2) {
+//                return o1 < o2 ? -1 : (o1.equals(o2) ? 0 : 1);
+//            }
+//        });
+//
+//        mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
+//
+//        initParams();
+//
+//        if (mBarAnimator != null && mBarAnimator.isRunning()) {
+//            mBarAnimator.cancel();
+//        }
+//        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
+//        mBarAnimator.setDuration(800);
+//        mBarAnimator.setInterpolator(new DecelerateInterpolator());
+//        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                mBarHeightFraction = animation.getAnimatedFraction();
+//                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
+//            }
+//        });
+//        mBarAnimator.start();
 
     }
 
@@ -207,7 +220,6 @@ public class PMWeeklyBarChart extends View {
     private int mBarWidthPx;//柱子的宽度
     private int mTriangleHeight;
     private int mTriangleEdgeLength;
-
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -249,7 +261,6 @@ public class PMWeeklyBarChart extends View {
         drawBaseLineTime(canvas);
         drawBar(canvas);
         drawLeftLegend(canvas);
-
         drawTriangle(canvas);
     }
 
@@ -266,21 +277,58 @@ public class PMWeeklyBarChart extends View {
     private float mTriangleTextX;
 
     private void drawTriangle(Canvas canvas) {
-        if (null == mTrianglePath || mDataBeanList == null || mDataBeanList.size() == 0 || mSelectedPosition == -1) {
+        if (null == mTrianglePath || mDataList == null || mDataList.size() == 0 || mSelectedPosition == -1) {
             return;
         }
         canvas.drawPath(mTrianglePath, mTrianglePaint);
-        canvas.drawText(String.valueOf(mDataBeanList.size() > mSelectedPosition ? mDataBeanList.get(mSelectedPosition) : 0), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
+        int indexOfDataList = mSelectedPosition;
+        switch (mFirstDayOfWeek) {
+            case Calendar.MONDAY:
+                indexOfDataList -= 2;
+                break;
+            case Calendar.SUNDAY:
+                indexOfDataList -= 1;
+                break;
+            default:
+        }
+        indexOfDataList = (indexOfDataList < 0 ? indexOfDataList + 6 : indexOfDataList);
+        canvas.drawText(String.valueOf(mDataList.size() > indexOfDataList ? mDataList.get(indexOfDataList).getStepCounts() : 0), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
     }
 
+    private Calendar mCalendar = Calendar.getInstance();
+
     private void drawBar(Canvas canvas) {
-        if (mDataBeanList == null || mDataBeanList.size() == 0) {
+        if (mDataList == null || mDataList.size() == 0) {
             return;
         }
-        for (int i = 0; i < mDataBeanList.size(); i++) {
-            float left = getBarX(i);
-            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
+        for (int i = 0; i < mDataList.size(); i++) {
+            PMStepCountEntity entity = mDataList.get(i);
+            float left = getBarX(getDayOfWeek(entity));
+            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - entity.getStepCounts() * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
+    }
+
+    /**
+     * convert the updateTimeInMill to the day of week in the bar chart
+     *
+     * @param entity
+     * @return
+     */
+    private int getDayOfWeek(PMStepCountEntity entity) {
+        mCalendar.setTimeInMillis(entity.getUpdateTimeInMill());
+        mCalendar.setFirstDayOfWeek(mFirstDayOfWeek);
+        int dayOfWeek = mCalendar.get(Calendar.DAY_OF_WEEK);
+        switch (mFirstDayOfWeek) {
+            case Calendar.MONDAY:
+                dayOfWeek -= 2;
+                break;
+            case Calendar.SUNDAY:
+                dayOfWeek -= 1;
+                break;
+            default:
+        }
+        dayOfWeek = (dayOfWeek < 0 ? dayOfWeek + 6 : dayOfWeek);
+        return dayOfWeek;
     }
 
     private void drawBaseLineTime(Canvas canvas) {
