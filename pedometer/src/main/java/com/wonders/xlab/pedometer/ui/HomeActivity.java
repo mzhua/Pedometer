@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.CalendarMode;
@@ -37,9 +36,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.Locale;
 
 public class HomeActivity extends BaseActivity {
 
@@ -49,6 +47,11 @@ public class HomeActivity extends BaseActivity {
     private DayFormat mDayFormat = new DayFormat();
 
     private SimpleDateFormat mMonthDayFormat;
+
+    public void takeAWalk(View view) {
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 123));
+        recreate();
+    }
 
     class DayFormat implements TitleFormatter {
 
@@ -67,10 +70,7 @@ public class HomeActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-//        SensorManager manager = (SensorManager) getSystemService(SENSOR_SERVICE);
-//        Toast.makeText(this, "manager.getSensorList(Sensor.TYPE_GYROSCOPE):" + manager.getSensorList(Sensor.TYPE_STEP_DETECTOR).size(), Toast.LENGTH_SHORT).show();
-
-        mMonthDayFormat = new SimpleDateFormat("MM月dd日");
+        mMonthDayFormat = new SimpleDateFormat("MM月dd日", Locale.CHINA);
 
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
@@ -119,7 +119,7 @@ public class HomeActivity extends BaseActivity {
                 super.onPageSelected(position);
                 switch (position) {
                     case 0:
-                        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_LEFT);
+                        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
                         break;
                     case 1:
                         mToolBarLayout.setTitleView(mWeekTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
@@ -138,7 +138,7 @@ public class HomeActivity extends BaseActivity {
         mMonthTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_month, null, false);
 
         ((TextView) mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(new Date()));
-        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_LEFT);
+        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
 
         mDailyTitleView.setOnClickListener(new View.OnClickListener() {
             @Override

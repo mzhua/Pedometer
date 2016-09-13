@@ -28,15 +28,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="平均步数"
+                    android:text="@string/tv_avg_steps"
                     android:textColor="@color/textBlack"
                     android:textSize="18sp"/>
 
-                <TextView
+                <TextView android:id="@+id/tvAvgSteps"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="4321"
+                    android:hint="@string/initial_hint_zero"
                     android:textColor="#328de8"
                     android:textSize="22sp"/>
             </LinearLayout>
@@ -51,15 +51,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="总步数"
+                    android:text="@string/tv_sum_steps"
                     android:textColor="@color/textBlack"
                     android:textSize="18sp"/>
 
-                <TextView
+                <TextView android:id="@+id/tvSumSteps"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="33321"
+                    android:hint="@string/initial_hint_zero"
                     android:textColor="#328de8"
                     android:textSize="22sp"/>
             </LinearLayout>

@@ -18,6 +18,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 import com.wonders.xlab.pedometer.R;
+import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
@@ -47,13 +48,15 @@ public class PMWeeklyBarChart extends View {
 
     private int mWeekTextHeightPx;//"周"的高度
     private int mNumberTextHeightPx;//数字高度
-    private int mMaxStepValue = 100;
+    private final int DEFAULT_MAX_STEP_VALUE = 100;
+    private int mMaxStepValue = DEFAULT_MAX_STEP_VALUE;
 
     private String[] mBarXLegendText;
     /**
      * data source
      */
     private List<Integer> mDataBeanList;
+    private List<PMStepCountEntity> mDataList;
 
     public PMWeeklyBarChart(Context context) {
         super(context);
@@ -94,7 +97,7 @@ public class PMWeeklyBarChart extends View {
         mBottomLineWidthInPx = DensityUtil.dp2px(context, 2);
         mBottomLinePaint = new Paint();
         mBottomLinePaint.setStyle(Paint.Style.STROKE);
-        mBottomLinePaint.setColor(Color.parseColor("#328de8"));
+        mBottomLinePaint.setColor(getResources().getColor(R.color.pmAppBlue));
         mBottomLinePaint.setStrokeWidth(mBottomLineWidthInPx);
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -107,12 +110,12 @@ public class PMWeeklyBarChart extends View {
         mNumberTextHeightPx = mTempTextBoundRect.height();
 
         mBarPaint = new Paint();
-        mBarPaint.setColor(Color.parseColor("#328de8"));
+        mBarPaint.setColor(getResources().getColor(R.color.pmAppBlue));
         mBarPaint.setStrokeWidth(8);
         mBarPaint.setStyle(Paint.Style.STROKE);
 
         mTrianglePaint = new Paint();
-        mTrianglePaint.setColor(Color.parseColor("#328de8"));
+        mTrianglePaint.setColor(getResources().getColor(R.color.pmAppBlue));
         mTrianglePaint.setStyle(Paint.Style.FILL);
         mTrianglePath = new Path();
     }
@@ -120,6 +123,42 @@ public class PMWeeklyBarChart extends View {
     private float mBarHeightFraction;
 
     private ValueAnimator mBarAnimator;
+
+    public void setDataBeanList(List<PMStepCountEntity> dataList) {
+        if (dataList == null) {
+            return;
+        }
+        if (mDataList == null) {
+            mDataList = new ArrayList<>();
+        } else {
+            mDataList.clear();
+        }
+        mDataList.addAll(dataList);
+        PMStepCountEntity tmpMax = Collections.max(mDataList, new Comparator<PMStepCountEntity>() {
+            @Override
+            public int compare(PMStepCountEntity o1, PMStepCountEntity o2) {
+                return (o1.getStepCounts() < o2.getStepCounts()) ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
+            }
+        });
+        mMaxStepValue = tmpMax.getStepCounts();
+        mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
+        initParams();
+
+        if (mBarAnimator != null && mBarAnimator.isRunning()) {
+            mBarAnimator.cancel();
+        }
+        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
+        mBarAnimator.setDuration(800);
+        mBarAnimator.setInterpolator(new DecelerateInterpolator());
+        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBarHeightFraction = animation.getAnimatedFraction();
+                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
+            }
+        });
+        mBarAnimator.start();
+    }
 
     public void setDataBean(List<Integer> dataBeanList) {
         if (dataBeanList == null) {
@@ -138,7 +177,7 @@ public class PMWeeklyBarChart extends View {
             }
         });
 
-        mMaxStepValue = (mMaxStepValue / 1000 + 1) * 1000;//去掉十位数
+        mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
 
         initParams();
 
@@ -231,14 +270,14 @@ public class PMWeeklyBarChart extends View {
             return;
         }
         canvas.drawPath(mTrianglePath, mTrianglePaint);
-        canvas.drawText(String.valueOf(mDataBeanList.get(mSelectedPosition)), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
+        canvas.drawText(String.valueOf(mDataBeanList.size() > mSelectedPosition ? mDataBeanList.get(mSelectedPosition) : 0), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
     }
 
     private void drawBar(Canvas canvas) {
         if (mDataBeanList == null || mDataBeanList.size() == 0) {
             return;
         }
-        for (int i = 0; i < mBarXLegendText.length; i++) {
+        for (int i = 0; i < mDataBeanList.size(); i++) {
             float left = getBarX(i);
             canvas.drawLine(left, mBottomLineY, left, mBottomLineY - mDataBeanList.get(i) * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
@@ -305,7 +344,7 @@ public class PMWeeklyBarChart extends View {
                         mSelectedPosition = i;
                     }
                 }
-                if (oldSelectedPosition == mSelectedPosition) {
+                if (oldSelectedPosition == mSelectedPosition && oldSelectedPosition != 0) {
                     break;
                 }
                 if (mTriangleIndicatorAnimator != null && mTriangleIndicatorAnimator.isRunning()) {

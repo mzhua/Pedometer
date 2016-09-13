@@ -39,9 +39,14 @@ public class PMStepCount {
 
     private static PMStepCount instance = null;
 
-    private String[] mProjection = {
+    private String[] mProjectionDay = {
             StepCountEntry.COLUMN_NAME_STEPS,
             StepCountEntry.COLUMN_NAME_CREATE_TIME_IN_MILL,
+            StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL
+    };
+
+    private String[] mProjectionWeekAndMonth = {
+            "sum(" + StepCountEntry.COLUMN_NAME_STEPS + ") " + StepCountEntry.COLUMN_NAME_STEPS,
             StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL
     };
 
@@ -107,7 +112,7 @@ public class PMStepCount {
         String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " >= " + (stepCountEntity.getUpdateTimeInMill() - INTERVAL_IN_MILL) + " and " +
                 StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " <= " + stepCountEntity.getUpdateTimeInMill();
 
-        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjection, selection, null, null, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
+        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjectionDay, selection, null, null, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
         if (cursor.moveToFirst()) {
             //get the latest one record
             stepCountEntity.setStepCounts(stepCountEntity.getStepCounts() + cursor.getInt(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_STEPS)));
@@ -128,24 +133,28 @@ public class PMStepCount {
         String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " between ? and ?";
         String[] selectionArgs = new String[]{String.valueOf(startTimeInMill), String.valueOf(endTimeInMill)};
         String groupBy = null;
+        String[] projection = mProjectionDay;
         switch (dataType) {
             case DataType.DAY:
+                projection = mProjectionDay;
                 groupBy = null;
                 break;
             case DataType.WEEK:
+                projection = mProjectionWeekAndMonth;
                 groupBy = StepCountEntry.COLUMN_NAME_DAY;
                 break;
             case DataType.MONTH:
+                projection = mProjectionWeekAndMonth;
                 groupBy = StepCountEntry.COLUMN_NAME_DAY;
                 break;
         }
-        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " ASC");
+        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, projection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " ASC");
 
         List<PMStepCountEntity> entityList = null;
         if (cursor.moveToFirst()) {
             entityList = new ArrayList<>();
             do {
-                PMStepCountEntity entity = new PMStepCountEntity(cursor.getLong(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_CREATE_TIME_IN_MILL)),
+                PMStepCountEntity entity = new PMStepCountEntity(cursor.getLong(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_STEPS)));
                 entityList.add(entity);
             } while (cursor.moveToNext());

@@ -22,11 +22,25 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepCountContr
     }
 
     @Override
-    public void getDatas(long startTimeInMill, long endTimeInMill, @PMStepCount.DataType int dataType) {
+    public void getDatas(long startTimeInMill, final long endTimeInMill, @PMStepCount.DataType int dataType) {
         mModel.getDataList(startTimeInMill, endTimeInMill, dataType, new BaseContract.Model.Callback<List<PMStepCountEntity>>() {
             @Override
             public void onSuccess(List<PMStepCountEntity> pmStepCountEntities) {
-                List<Integer> dataList = new ArrayList<>();
+                List<Integer> dataList = null;
+                int avgStep = 0;
+                int sumStep = 0;
+                if (pmStepCountEntities != null && pmStepCountEntities.size() > 0) {
+                    dataList = new ArrayList<>();
+                    //just in case, take the first seven records
+                    for (int i = 0; i < Math.min(pmStepCountEntities.size(), 6); i++) {
+                        PMStepCountEntity entity = pmStepCountEntities.get(i);
+                        int counts = entity.getStepCounts();
+                        sumStep += counts;
+                        dataList.add(counts);
+                    }
+                    avgStep = sumStep / pmStepCountEntities.size();
+                }
+                mView.showDailyData(avgStep, sumStep, dataList);
             }
 
             @Override

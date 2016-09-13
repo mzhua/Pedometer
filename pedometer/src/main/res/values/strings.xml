@@ -2,14 +2,17 @@
     <string name="pm_app_name">计步器</string>
     <string name="pm_share_to">分享到</string>
     <string name="pm_daily_ring_chart_step_counts_sum">当日步数</string>
+    <string name="initial_hint_zero">0</string>
+    <string name="tv_avg_steps">平均步数</string>
+    <string name="tv_sum_steps">总步数</string>
     <string-array name="pm_week">
-        <item>周日</item>
         <item>周一</item>
         <item>周二</item>
         <item>周三</item>
         <item>周四</item>
         <item>周五</item>
         <item>周六</item>
+        <item>周日</item>
     </string-array>
 
 </resources>

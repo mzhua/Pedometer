@@ -11,6 +11,6 @@ import java.util.List;
 
 public interface PMWeeklyContract {
     interface View extends BaseContract.View {
-        void showDailyData(int avgStepCounts, int totalStepCounts, List<Integer> dataList);
+        void showDailyData(int avgStepCounts, int sumStepCounts, List<Integer> dataList);
     }
 }

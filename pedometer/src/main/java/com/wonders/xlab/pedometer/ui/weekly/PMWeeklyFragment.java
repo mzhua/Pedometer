@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
@@ -17,6 +18,8 @@ import java.util.List;
 
 public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements PMWeeklyContract.View {
     private PMWeeklyBarChart mBarChart;
+    private TextView mTvAvgSteps;
+    private TextView mTvSumSteps;
     private PMWeeklyPresenter mPresenter;
 
     @Override
@@ -52,10 +55,15 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mBarChart = (PMWeeklyBarChart) view.findViewById(R.id.barChart);
+        mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
+        mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
+        getPresenter().getDatas(0,System.currentTimeMillis(), PMStepCount.DataType.WEEK);
     }
 
     @Override
-    public void showDailyData(int avgStepCounts, int totalStepCounts, List<Integer> dataList) {
+    public void showDailyData(int avgStepCounts, int sumStepCounts, List<Integer> dataList) {
+        mTvAvgSteps.setText(String.valueOf(avgStepCounts));
+        mTvSumSteps.setText(String.valueOf(sumStepCounts));
         mBarChart.setDataBean(dataList);
     }
 }
