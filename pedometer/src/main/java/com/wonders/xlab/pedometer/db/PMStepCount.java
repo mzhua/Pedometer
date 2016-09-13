@@ -27,7 +27,7 @@ import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.WEEK;
  */
 
 public class PMStepCount {
-    private final int INTERVAL_MINUTES = 20;//1m
+    private final int INTERVAL_MINUTES = 20;
     /**
      * 保存记录时,在这个时间差范围内的记录合并为一条
      */
@@ -109,14 +109,13 @@ public class PMStepCount {
     private PMStepCountEntity queryByUpdateTimeInMillWithin20Min(SQLiteDatabase db, @NonNull PMStepCountEntity stepCountEntity) {
 
 
-        String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " >= " + (stepCountEntity.getUpdateTimeInMill() - INTERVAL_IN_MILL) + " and " +
-                StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " <= " + stepCountEntity.getUpdateTimeInMill();
+        String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " between ? and ?";
+        String[] selectionArgs = new String[]{String.valueOf(stepCountEntity.getUpdateTimeInMill() - INTERVAL_IN_MILL), String.valueOf(stepCountEntity.getUpdateTimeInMill())};
 
-        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjectionDay, selection, null, null, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
+        Cursor cursor = db.query(StepCountEntry.TABLE_NAME, mProjectionDay, selection, selectionArgs, null, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " DESC");
         if (cursor.moveToFirst()) {
             //get the latest one record
             stepCountEntity.setStepCounts(stepCountEntity.getStepCounts() + cursor.getInt(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_STEPS)));
-            stepCountEntity.setUpdateTimeInMill(stepCountEntity.getUpdateTimeInMill());
             stepCountEntity.setCreateTimeInMill(cursor.getLong(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_CREATE_TIME_IN_MILL)));
         } else {
             //or set the new record's create time to update time
