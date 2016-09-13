@@ -214,10 +214,44 @@ public class PMWeeklyBarChart extends View {
             mDataList.clear();
         }
 
-        int[] daysOfWeek = new int[]{Calendar.MONDAY,Calendar.TUESDAY,Calendar.WEDNESDAY,Calendar.THURSDAY,Calendar.FRIDAY,Calendar.SATURDAY,Calendar.SUNDAY};
         if (dataList != null) {
+            int[] daysOfWeek = new int[]{Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
+            for (int i : daysOfWeek) {
+                boolean exists = false;
+                for (PMWeeklyBarChartBean bean : dataList) {
+                    if (i == bean.getDayOfWeek()) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    PMWeeklyBarChartBean bean = new PMWeeklyBarChartBean(i, 0);
+                    dataList.add(bean);
+                }
+            }
             mDataList.addAll(dataList);
             mMaxValue = getMaxValueOfDataList(dataList);
+            Collections.sort(mDataList, new Comparator<PMWeeklyBarChartBean>() {
+                @Override
+                public int compare(PMWeeklyBarChartBean o1, PMWeeklyBarChartBean o2) {
+                    int o1DayOfWeek = o1.getDayOfWeek();
+                    int o2DayOfWeek = o2.getDayOfWeek();
+                    if (mFirstDayOfWeek == Calendar.SUNDAY) {
+                        o1DayOfWeek -= 1;
+                        o2DayOfWeek -= 1;
+                    } else {
+                        o1DayOfWeek -= 2;
+                        o2DayOfWeek -= 2;
+                    }
+                    if (o1DayOfWeek < 0) {
+                        o1DayOfWeek += 7;
+                    }
+                    if (o2DayOfWeek < 0) {
+                        o2DayOfWeek += 7;
+                    }
+                    return (o1DayOfWeek < o2DayOfWeek) ? -1 : (o1DayOfWeek == o2DayOfWeek ? 0 : 1);
+                }
+            });
         }
 
         mMaxValue = (mMaxValue / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;
@@ -290,70 +324,9 @@ public class PMWeeklyBarChart extends View {
         }
         for (int i = 0; i < mDataList.size(); i++) {
             PMWeeklyBarChartBean entity = mDataList.get(i);
-            int dataBeanPositionOfBarIndex = getBarIndexOfDataBean(entity);
-            float left = getBarXOfPosition(dataBeanPositionOfBarIndex);
+            float left = getBarXOfPosition(i);
             canvas.drawLine(left, mBottomLineY, left, mBottomLineY - entity.getValue() * mBarHeightFraction * 1.0f / mMaxValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
-    }
-
-    /**
-     * 获取该项数据对应柱图柱子的位置(从0开始)
-     *
-     * @param entity
-     * @return
-     */
-    private int getBarIndexOfDataBean(PMWeeklyBarChartBean entity) {
-        int dayOfWeek = entity.getDayOfWeek();
-        if (mFirstDayOfWeek == Calendar.SUNDAY) {
-            switch (dayOfWeek) {
-                case Calendar.MONDAY:
-                    dayOfWeek = 1;
-                    break;
-                case Calendar.TUESDAY:
-                    dayOfWeek = 2;
-                    break;
-                case Calendar.WEDNESDAY:
-                    dayOfWeek = 3;
-                    break;
-                case Calendar.THURSDAY:
-                    dayOfWeek = 4;
-                    break;
-                case Calendar.FRIDAY:
-                    dayOfWeek = 5;
-                    break;
-                case Calendar.SATURDAY:
-                    dayOfWeek = 6;
-                    break;
-                case Calendar.SUNDAY:
-                    dayOfWeek = 0;
-                    break;
-            }
-        } else {
-            switch (dayOfWeek) {
-                case Calendar.MONDAY:
-                    dayOfWeek = 0;
-                    break;
-                case Calendar.TUESDAY:
-                    dayOfWeek = 1;
-                    break;
-                case Calendar.WEDNESDAY:
-                    dayOfWeek = 2;
-                    break;
-                case Calendar.THURSDAY:
-                    dayOfWeek = 3;
-                    break;
-                case Calendar.FRIDAY:
-                    dayOfWeek = 4;
-                    break;
-                case Calendar.SATURDAY:
-                    dayOfWeek = 5;
-                    break;
-                case Calendar.SUNDAY:
-                    dayOfWeek = 6;
-                    break;
-            }
-        }
-        return dayOfWeek;
     }
 
     private void drawBaseLineTime(Canvas canvas) {

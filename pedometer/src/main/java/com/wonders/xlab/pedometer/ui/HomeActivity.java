@@ -49,7 +49,7 @@ public class HomeActivity extends BaseActivity {
     private SimpleDateFormat mMonthDayFormat;
 
     public void takeAWalk(View view) {
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 123));
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis() - 24 * 60 * 60 * 1000, 23));
         recreate();
     }
 
