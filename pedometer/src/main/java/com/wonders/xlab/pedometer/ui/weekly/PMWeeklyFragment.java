@@ -9,10 +9,10 @@ import android.widget.TextView;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.data.PMStepCountModel;
 import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChart;
+import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     }
 
     @Override
-    public void showDailyData(int avgStepCounts, int sumStepCounts, List<PMStepCountEntity> dataList) {
+    public void showDailyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList) {
         mTvAvgSteps.setText(String.valueOf(avgStepCounts));
         mTvSumSteps.setText(String.valueOf(sumStepCounts));
         mBarChart.setDataBeanList(dataList);

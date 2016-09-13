@@ -18,7 +18,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 import com.wonders.xlab.pedometer.R;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.util.DensityUtil;
 
 import java.util.ArrayList;
@@ -32,8 +31,6 @@ import java.util.List;
  * TODO: document your custom view class.
  */
 public class PMWeeklyBarChart extends View {
-
-    private int mSectionCounts = 4;//Y轴平分的数量
 
     private Paint mDotLinePaint;
     private float mDotLineWidthInPx;
@@ -49,16 +46,67 @@ public class PMWeeklyBarChart extends View {
 
     private int mWeekTextHeightPx;//"周"的高度
     private int mNumberTextHeightPx;//数字高度
-    private final int DEFAULT_MAX_STEP_VALUE = 100;
-    private int mMaxStepValue = DEFAULT_MAX_STEP_VALUE;
 
+    /**
+     * Y轴虚线的数量
+     */
+    private int mVerticalSplittersCounts = 4;
+
+    private final int DEFAULT_MAX_VALUE = 100;
+    /**
+     * Y轴的最大值
+     */
+    private int mMaxValue = DEFAULT_MAX_VALUE;
+
+    /**
+     * X轴文字
+     */
     private String[] mBarXLegendText;
+    /**
+     * X轴星期的第一天
+     */
     private int mFirstDayOfWeek = Calendar.MONDAY;
     /**
-     * data source
+     * 数据源
      */
-//    private List<Integer> mDataBeanList;
-    private List<PMStepCountEntity> mDataList;
+    private List<PMWeeklyBarChartBean> mDataList;
+
+    /**
+     * 顶部倒三角指示器动画
+     */
+    private ValueAnimator mTriangleIndicatorAnimator;
+
+    /**
+     * 用于测绘文字大小的临时变量
+     */
+    private Rect mTempTextBoundRect = new Rect();
+
+    /**
+     * 柱子的动画参数
+     */
+    private float mBarHeightFraction;
+    private ValueAnimator mBarAnimator;
+
+    /**
+     * 边界位置参数
+     */
+    private float mYLegendLeft;
+    private float mChartLeft;//中间柱图区域(不包括左边的数值区域)的左边界,即虚线的左侧x
+    private float mChartRight;//中间柱图区域的右边界
+    private float mBottomLineY;//最底下一条实线的y
+    private float mTopLineY;//最顶部一条虚线的y
+
+    /**
+     * 柱子的宽度
+     */
+    private int mBarWidthPx;
+
+    /**
+     * 倒三角指示器
+     */
+    private int mTriangleHeight;
+    private int mTriangleEdgeLength;
+    private int mIndicatorBarPosition = -1;
 
     public PMWeeklyBarChart(Context context) {
         super(context);
@@ -80,8 +128,6 @@ public class PMWeeklyBarChart extends View {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
     }
-
-    private Rect mTempTextBoundRect = new Rect();
 
     private void init(Context context, AttributeSet attrs) {
 
@@ -126,100 +172,15 @@ public class PMWeeklyBarChart extends View {
         mTrianglePath = new Path();
     }
 
-    private float mBarHeightFraction;
-
-    private ValueAnimator mBarAnimator;
-
-    public void setDataBeanList(List<PMStepCountEntity> dataList) {
-
-        if (mDataList == null) {
-            mDataList = new ArrayList<>();
-        } else {
-            mDataList.clear();
-        }
-        if (dataList != null) {
-            mDataList.addAll(dataList);
-            if (dataList.size() > 0) {
-                PMStepCountEntity tmpMax = Collections.max(mDataList, new Comparator<PMStepCountEntity>() {
-                    @Override
-                    public int compare(PMStepCountEntity o1, PMStepCountEntity o2) {
-                        return (o1.getStepCounts() < o2.getStepCounts()) ? -1 : (o1.getStepCounts() == o2.getStepCounts() ? 0 : 1);
-                    }
-                });
-                mMaxStepValue = tmpMax.getStepCounts();
-            }
-        }
-
-        mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
-        initParams();
-
-        startAnimator();
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawSplitters(canvas);
+        drawBaseLineTime(canvas);
+        drawBar(canvas);
+        drawLeftLegend(canvas);
+        drawTriangle(canvas);
     }
-
-    private void startAnimator() {
-        if (mBarAnimator != null && mBarAnimator.isRunning()) {
-            mBarAnimator.cancel();
-        }
-        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
-        mBarAnimator.setDuration(800);
-        mBarAnimator.setInterpolator(new DecelerateInterpolator());
-        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBarHeightFraction = animation.getAnimatedFraction();
-                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
-            }
-        });
-        mBarAnimator.start();
-    }
-
-    public void setDataBean(List<Integer> dataBeanList) {
-//        if (dataBeanList == null) {
-//            return;
-//        }
-//        if (mDataBeanList == null) {
-//            mDataBeanList = new ArrayList<>();
-//        } else {
-//            mDataBeanList.clear();
-//        }
-//        mDataBeanList.addAll(dataBeanList);
-//        mMaxStepValue = Collections.max(mDataBeanList, new Comparator<Integer>() {
-//            @Override
-//            public int compare(Integer o1, Integer o2) {
-//                return o1 < o2 ? -1 : (o1.equals(o2) ? 0 : 1);
-//            }
-//        });
-//
-//        mMaxStepValue = (mMaxStepValue / DEFAULT_MAX_STEP_VALUE + 1) * DEFAULT_MAX_STEP_VALUE;
-//
-//        initParams();
-//
-//        if (mBarAnimator != null && mBarAnimator.isRunning()) {
-//            mBarAnimator.cancel();
-//        }
-//        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
-//        mBarAnimator.setDuration(800);
-//        mBarAnimator.setInterpolator(new DecelerateInterpolator());
-//        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                mBarHeightFraction = animation.getAnimatedFraction();
-//                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
-//            }
-//        });
-//        mBarAnimator.start();
-
-    }
-
-    private float mYLegendLeft;
-    private float mChartLeft;
-    private float mChartRight;
-
-    private float mBottomLineY;
-    private float mTopLineY;
-    private int mBarWidthPx;//柱子的宽度
-    private int mTriangleHeight;
-    private int mTriangleEdgeLength;
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -231,7 +192,7 @@ public class PMWeeklyBarChart extends View {
     }
 
     private void initParams() {
-        mChartLeft = (int) (mYLegendLeft + 3 * getMaxYLegendWidth() / 2);
+        mChartLeft = (int) (mYLegendLeft + 3 * mTextPaint.measureText(String.valueOf(mMaxValue)) / 2);
 
         mBarWidthPx = (int) ((mChartRight - mChartLeft) / (mBarXLegendText.length * 2));
         mBarPaint.setStrokeWidth(mBarWidthPx <= 0 ? 1 : mBarWidthPx);
@@ -245,23 +206,62 @@ public class PMWeeklyBarChart extends View {
 
     }
 
-    /**
-     * 根据数据动态计算y轴数字中最大的长度
-     *
-     * @return
-     */
-    private float getMaxYLegendWidth() {
-        return mTextPaint.measureText(String.valueOf(mMaxStepValue));
+    public void setDataBeanList(List<PMWeeklyBarChartBean> dataList) {
+
+        if (mDataList == null) {
+            mDataList = new ArrayList<>();
+        } else {
+            mDataList.clear();
+        }
+
+        int[] daysOfWeek = new int[]{Calendar.MONDAY,Calendar.TUESDAY,Calendar.WEDNESDAY,Calendar.THURSDAY,Calendar.FRIDAY,Calendar.SATURDAY,Calendar.SUNDAY};
+        if (dataList != null) {
+            mDataList.addAll(dataList);
+            mMaxValue = getMaxValueOfDataList(dataList);
+        }
+
+        mMaxValue = (mMaxValue / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;
+
+        initParams();
+
+        startBarAnimator();
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawSplitters(canvas);
-        drawBaseLineTime(canvas);
-        drawBar(canvas);
-        drawLeftLegend(canvas);
-        drawTriangle(canvas);
+    /**
+     * 获取数据中最大的value的值
+     *
+     * @param dataList
+     * @return
+     */
+    private int getMaxValueOfDataList(List<PMWeeklyBarChartBean> dataList) {
+        int maxValue = DEFAULT_MAX_VALUE;
+        if (dataList.size() > 0) {
+            PMWeeklyBarChartBean tmpMax = Collections.max(mDataList, new Comparator<PMWeeklyBarChartBean>() {
+                @Override
+                public int compare(PMWeeklyBarChartBean o1, PMWeeklyBarChartBean o2) {
+                    return (o1.getValue() < o2.getValue()) ? -1 : (o1.getValue() == o2.getValue() ? 0 : 1);
+                }
+            });
+            maxValue = tmpMax.getValue();
+        }
+        return maxValue;
+    }
+
+    private void startBarAnimator() {
+        if (mBarAnimator != null && mBarAnimator.isRunning()) {
+            mBarAnimator.cancel();
+        }
+        mBarAnimator = ValueAnimator.ofInt(mMaxValue);
+        mBarAnimator.setDuration(800);
+        mBarAnimator.setInterpolator(new DecelerateInterpolator());
+        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBarHeightFraction = animation.getAnimatedFraction();
+                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
+            }
+        });
+        mBarAnimator.start();
     }
 
     /**
@@ -270,70 +270,95 @@ public class PMWeeklyBarChart extends View {
      * @param position
      * @return
      */
-    private float getBarX(int position) {
+    private float getBarXOfPosition(int position) {
         return mChartLeft + mBarWidthPx + mBarWidthPx * 2 * position;
     }
 
     private float mTriangleTextX;
 
     private void drawTriangle(Canvas canvas) {
-        if (null == mTrianglePath || mDataList == null || mDataList.size() == 0 || mSelectedPosition == -1) {
+        if (null == mTrianglePath || mDataList == null || mDataList.size() == 0 || mIndicatorBarPosition == -1) {
             return;
         }
         canvas.drawPath(mTrianglePath, mTrianglePaint);
-        int indexOfDataList = mSelectedPosition;
-        switch (mFirstDayOfWeek) {
-            case Calendar.MONDAY:
-                indexOfDataList -= 2;
-                break;
-            case Calendar.SUNDAY:
-                indexOfDataList -= 1;
-                break;
-            default:
-        }
-        indexOfDataList = (indexOfDataList < 0 ? indexOfDataList + 6 : indexOfDataList);
-        canvas.drawText(String.valueOf(mDataList.size() > indexOfDataList ? mDataList.get(indexOfDataList).getStepCounts() : 0), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
+        canvas.drawText(String.valueOf(mDataList.get(mIndicatorBarPosition).getValue()), mTriangleTextX, mTopLineY - 2 * mTriangleHeight, mTextPaint);
     }
-
-    private Calendar mCalendar = Calendar.getInstance();
 
     private void drawBar(Canvas canvas) {
         if (mDataList == null || mDataList.size() == 0) {
             return;
         }
         for (int i = 0; i < mDataList.size(); i++) {
-            PMStepCountEntity entity = mDataList.get(i);
-            float left = getBarX(getDayOfWeek(entity));
-            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - entity.getStepCounts() * mBarHeightFraction * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY), mBarPaint);
+            PMWeeklyBarChartBean entity = mDataList.get(i);
+            int dataBeanPositionOfBarIndex = getBarIndexOfDataBean(entity);
+            float left = getBarXOfPosition(dataBeanPositionOfBarIndex);
+            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - entity.getValue() * mBarHeightFraction * 1.0f / mMaxValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
     }
 
     /**
-     * convert the updateTimeInMill to the day of week in the bar chart
+     * 获取该项数据对应柱图柱子的位置(从0开始)
      *
      * @param entity
      * @return
      */
-    private int getDayOfWeek(PMStepCountEntity entity) {
-        mCalendar.setTimeInMillis(entity.getUpdateTimeInMill());
-        mCalendar.setFirstDayOfWeek(mFirstDayOfWeek);
-        int dayOfWeek = mCalendar.get(Calendar.DAY_OF_WEEK);
-        switch (mFirstDayOfWeek) {
-            case Calendar.MONDAY:
-                dayOfWeek -= 2;
-                break;
-            case Calendar.SUNDAY:
-                dayOfWeek -= 1;
-                break;
-            default:
+    private int getBarIndexOfDataBean(PMWeeklyBarChartBean entity) {
+        int dayOfWeek = entity.getDayOfWeek();
+        if (mFirstDayOfWeek == Calendar.SUNDAY) {
+            switch (dayOfWeek) {
+                case Calendar.MONDAY:
+                    dayOfWeek = 1;
+                    break;
+                case Calendar.TUESDAY:
+                    dayOfWeek = 2;
+                    break;
+                case Calendar.WEDNESDAY:
+                    dayOfWeek = 3;
+                    break;
+                case Calendar.THURSDAY:
+                    dayOfWeek = 4;
+                    break;
+                case Calendar.FRIDAY:
+                    dayOfWeek = 5;
+                    break;
+                case Calendar.SATURDAY:
+                    dayOfWeek = 6;
+                    break;
+                case Calendar.SUNDAY:
+                    dayOfWeek = 0;
+                    break;
+            }
+        } else {
+            switch (dayOfWeek) {
+                case Calendar.MONDAY:
+                    dayOfWeek = 0;
+                    break;
+                case Calendar.TUESDAY:
+                    dayOfWeek = 1;
+                    break;
+                case Calendar.WEDNESDAY:
+                    dayOfWeek = 2;
+                    break;
+                case Calendar.THURSDAY:
+                    dayOfWeek = 3;
+                    break;
+                case Calendar.FRIDAY:
+                    dayOfWeek = 4;
+                    break;
+                case Calendar.SATURDAY:
+                    dayOfWeek = 5;
+                    break;
+                case Calendar.SUNDAY:
+                    dayOfWeek = 6;
+                    break;
+            }
         }
-        dayOfWeek = (dayOfWeek < 0 ? dayOfWeek + 6 : dayOfWeek);
         return dayOfWeek;
     }
 
     private void drawBaseLineTime(Canvas canvas) {
         for (int i = 0; i < mBarXLegendText.length; i++) {
-            float x = getBarX(i);
+            float x = getBarXOfPosition(i);
             String timeStr = mBarXLegendText[i];
             canvas.drawText(timeStr, x, mBottomLineY + 3 * mWeekTextHeightPx / 2, mTextPaint);
         }
@@ -345,9 +370,9 @@ public class PMWeeklyBarChart extends View {
      * @param canvas
      */
     private void drawSplitters(Canvas canvas) {
-        float pxPerDivide = (mBottomLineY - mTopLineY) / mSectionCounts;
+        float pxPerDivide = (mBottomLineY - mTopLineY) / mVerticalSplittersCounts;
         Paint paint;
-        for (int i = 0; i < mSectionCounts + 1; i++) {
+        for (int i = 0; i < mVerticalSplittersCounts + 1; i++) {
             float stopY = pxPerDivide * i + mTopLineY;
             if (i < 4) {
                 paint = mDotLinePaint;
@@ -359,18 +384,16 @@ public class PMWeeklyBarChart extends View {
     }
 
     private void drawLeftLegend(Canvas canvas) {
-        float pxPerDivide = (mBottomLineY - mTopLineY) / mSectionCounts;
-        for (int i = 0; i < mSectionCounts + 1; i++) {
+        float pxPerDivide = (mBottomLineY - mTopLineY) / mVerticalSplittersCounts;
+        for (int i = 0; i < mVerticalSplittersCounts + 1; i++) {
             float stopY = pxPerDivide * i + mTopLineY + mNumberTextHeightPx / 2;
-            int a = mMaxStepValue / mSectionCounts;
-            canvas.drawText(String.valueOf(a * (mSectionCounts - i)), mYLegendLeft + getMaxYLegendWidth() / 2, stopY, mTextPaint);
+            int a = mMaxValue / mVerticalSplittersCounts;
+            canvas.drawText(String.valueOf(a * (mVerticalSplittersCounts - i)), mYLegendLeft + mTextPaint.measureText(String.valueOf(mMaxValue)) / 2, stopY, mTextPaint);
         }
     }
 
-    private int mSelectedPosition = -1;
-
-    public void setSelectedPosition(int selectedPosition) {
-        this.mSelectedPosition = selectedPosition;
+    public void setIndicatorBarPosition(int indicatorBarPosition) {
+        this.mIndicatorBarPosition = indicatorBarPosition;
         invalidateSelectedIndicator();
     }
 
@@ -378,53 +401,68 @@ public class PMWeeklyBarChart extends View {
         postInvalidate(getPaddingLeft(), getPaddingTop(), getMeasuredWidth() - getPaddingRight(), (int) mTopLineY);
     }
 
-    private ValueAnimator mTriangleIndicatorAnimator;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 float pointX = event.getX();
 
-                int oldSelectedPosition = mSelectedPosition == -1 ? 0 : mSelectedPosition;
-                for (int i = 0; i < mBarXLegendText.length; i++) {
-                    if (Math.abs(pointX - getBarX(i)) <= mBarWidthPx) {
-                        mSelectedPosition = i;
-                    }
-                }
-                if (oldSelectedPosition == mSelectedPosition && oldSelectedPosition != 0) {
-                    break;
-                }
-                if (mTriangleIndicatorAnimator != null && mTriangleIndicatorAnimator.isRunning()) {
-                    mTriangleIndicatorAnimator.cancel();
-                }
-                mTriangleIndicatorAnimator = ValueAnimator.ofFloat(getBarX(oldSelectedPosition), getBarX(mSelectedPosition));
-                mTriangleIndicatorAnimator.setDuration(800);
-                mTriangleIndicatorAnimator.setInterpolator(new OvershootInterpolator(1));
-                mTriangleIndicatorAnimator.start();
-                mTriangleIndicatorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        float x = (float) animation.getAnimatedValue();
-                        if (mTrianglePath != null) {
-                            mTrianglePath.reset();
-                        } else {
-                            mTrianglePath = new Path();
-                        }
-                        float y = mTopLineY;
-                        mTrianglePath.moveTo(x, y);
-                        mTrianglePath.lineTo(x - mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
-                        mTrianglePath.lineTo(x + mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
-                        mTrianglePath.close();
+                int oldSelectedPosition = mIndicatorBarPosition == -1 ? 0 : mIndicatorBarPosition;
+                mIndicatorBarPosition = getBarIndexUnderTheTouchPointX(pointX);
 
-                        mTriangleTextX = x;
-                        invalidateSelectedIndicator();
-                    }
-                });
-                mTriangleIndicatorAnimator.start();
+                startTriangleIndicatorAnimation(oldSelectedPosition);
                 break;
         }
 
         return super.onTouchEvent(event);
+    }
+
+    /**
+     * 倒三角指示器动画
+     *
+     * @param oldSelectedPosition
+     */
+    private void startTriangleIndicatorAnimation(int oldSelectedPosition) {
+        if (oldSelectedPosition == mIndicatorBarPosition && oldSelectedPosition != 0) {
+            return;
+        }
+        if (mTriangleIndicatorAnimator != null && mTriangleIndicatorAnimator.isRunning()) {
+            mTriangleIndicatorAnimator.cancel();
+        }
+        mTriangleIndicatorAnimator = ValueAnimator.ofFloat(getBarXOfPosition(oldSelectedPosition), getBarXOfPosition(mIndicatorBarPosition));
+        mTriangleIndicatorAnimator.setDuration(800);
+        mTriangleIndicatorAnimator.setInterpolator(new OvershootInterpolator(1));
+        mTriangleIndicatorAnimator.start();
+        mTriangleIndicatorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float x = (float) animation.getAnimatedValue();
+                if (mTrianglePath != null) {
+                    mTrianglePath.reset();
+                } else {
+                    mTrianglePath = new Path();
+                }
+                float y = mTopLineY;
+                mTrianglePath.moveTo(x, y);
+                mTrianglePath.lineTo(x - mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
+                mTrianglePath.lineTo(x + mTriangleEdgeLength / 2, (float) (y - Math.sqrt(3) / 2 * mTriangleEdgeLength));
+                mTrianglePath.close();
+
+                mTriangleTextX = x;
+                invalidateSelectedIndicator();
+            }
+        });
+        mTriangleIndicatorAnimator.start();
+    }
+
+    private int getBarIndexUnderTheTouchPointX(float pointX) {
+        int touchPosition = 0;
+        for (int i = 0; i < mBarXLegendText.length; i++) {
+            if (Math.abs(pointX - getBarXOfPosition(i)) <= mBarWidthPx) {
+                touchPosition = i;
+                break;
+            }
+        }
+        return touchPosition;
     }
 }

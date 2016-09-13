@@ -2,6 +2,7 @@ package com.wonders.xlab.pedometer.ui.weekly;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
+import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,6 @@ import java.util.List;
 
 public interface PMWeeklyContract {
     interface View extends BaseContract.View {
-        void showDailyData(int avgStepCounts, int sumStepCounts, List<PMStepCountEntity> dataList);
+        void showDailyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList);
     }
 }

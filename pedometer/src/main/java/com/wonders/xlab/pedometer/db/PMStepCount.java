@@ -47,7 +47,7 @@ public class PMStepCount {
 
     private String[] mProjectionWeekAndMonth = {
             "sum(" + StepCountEntry.COLUMN_NAME_STEPS + ") " + StepCountEntry.COLUMN_NAME_STEPS,
-            StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL
+            "max(" + StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + ") " + StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL
     };
 
     @Retention(RetentionPolicy.SOURCE)
