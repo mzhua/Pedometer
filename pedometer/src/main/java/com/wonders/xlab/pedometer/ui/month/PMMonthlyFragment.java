@@ -5,19 +5,22 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.data.PMStepCountModel;
 import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.widget.PMMonthLineAreaBean;
 import com.wonders.xlab.pedometer.widget.PMMonthLineAreaChart;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Random;
+import java.util.List;
 
 public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implements PMMonthlyContract.View {
     private PMMonthLineAreaChart mAreaChart;
+    private TextView mTvAvgSteps;
+    private TextView mTvSumSteps;
     private PMMonthlyPresenter mPresenter;
 
     public PMMonthlyFragment() {
@@ -53,12 +56,15 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mAreaChart = (PMMonthLineAreaChart) view.findViewById(R.id.lineAreaChart);
-        Random random = new Random();
-        random.setSeed(System.currentTimeMillis());
-        ArrayList<Integer> data = new ArrayList<>();
-        for (int i = 0; i < Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH); i++) {
-            data.add(random.nextInt(30000));
-        }
-        mAreaChart.setDataBean(data);
+        mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
+        mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
+        getPresenter().getDatas(0,System.currentTimeMillis(), PMStepCount.DataType.MONTH);
+    }
+
+    @Override
+    public void showMonthlyData(int avgStepCounts, int sumStepCounts, List<PMMonthLineAreaBean> dataList) {
+        mTvAvgSteps.setText(String.valueOf(avgStepCounts));
+        mTvSumSteps.setText(String.valueOf(sumStepCounts));
+        mAreaChart.setDataBean(dataList, Calendar.getInstance().getTimeInMillis());
     }
 }

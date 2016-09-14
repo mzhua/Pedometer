@@ -13,6 +13,6 @@ import java.util.List;
 
 public interface PMWeeklyContract {
     interface View extends BaseContract.View {
-        void showDailyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList);
+        void showWeeklyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList);
     }
 }

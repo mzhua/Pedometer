@@ -1,7 +1,6 @@
 package com.wonders.xlab.pedometer.ui.weekly;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
 import com.wonders.xlab.pedometer.base.BasePresenter;
@@ -9,7 +8,6 @@ import com.wonders.xlab.pedometer.base.DefaultException;
 import com.wonders.xlab.pedometer.data.PMStepCountContract;
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMStepCount;
-import com.wonders.xlab.pedometer.util.DateFormatUtil;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
 import java.util.ArrayList;
@@ -50,7 +48,7 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepCountContr
                     }
                     avgStep = sumStep / pmStepCountEntities.size();
                 }
-                mView.showDailyData(avgStep, sumStep, dataList);
+                mView.showWeeklyData(avgStep, sumStep, dataList);
             }
 
             @Override

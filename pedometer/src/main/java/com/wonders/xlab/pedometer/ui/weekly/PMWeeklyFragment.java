@@ -61,7 +61,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     }
 
     @Override
-    public void showDailyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList) {
+    public void showWeeklyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList) {
         mTvAvgSteps.setText(String.valueOf(avgStepCounts));
         mTvSumSteps.setText(String.valueOf(sumStepCounts));
         mBarChart.setDataBeanList(dataList);

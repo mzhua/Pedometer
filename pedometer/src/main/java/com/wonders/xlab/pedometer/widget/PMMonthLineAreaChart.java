@@ -30,25 +30,26 @@ import java.util.List;
 public class PMMonthLineAreaChart extends View {
 
     private int mSectionCounts = 4;//Y轴平分的数量
-
     private Paint mDotLinePaint;
+
     private float mDotLineWidthInPx;
-
     private Paint mBottomLinePaint;
-    private float mBottomLineWidthInPx;
 
+    private float mBottomLineWidthInPx;
     private Paint mLinePaint;
 
     private TextPaint mTextPaint;
 
     private int mNumberTextHeightPx;//数字高度
-    private int mMaxStepValue = 100;
+
+    private final int DEFAULT_MAX_VALUE = 100;
+    private int mMaxStepValue = DEFAULT_MAX_VALUE;
 
     /**
      * data source
      */
-    private List<Integer> mDataBeanList;
-    private String[] mXLegendArray;
+    private List<PMMonthLineAreaBean> mDataBeanList;
+    private int[] mXLegendArray;
     private Path mPath;
 
     public PMMonthLineAreaChart(Context context) {
@@ -77,12 +78,7 @@ public class PMMonthLineAreaChart extends View {
     private void init(Context context, AttributeSet attrs) {
         mPath = new Path();
 
-        Calendar calendar = Calendar.getInstance();
-        int daysOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        mXLegendArray = new String[daysOfMonth];
-        for (int i = 0; i < daysOfMonth; i++) {
-            mXLegendArray[i] = String.valueOf(i + 1);
-        }
+        setupXLegendArray(System.currentTimeMillis());
 
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
@@ -158,7 +154,7 @@ public class PMMonthLineAreaChart extends View {
             }
             for (int i = 0; i < mXLegendArray.length; i++) {
                 float x = getDateLegendX(i);
-                float y = mBottomLineY - mDataBeanList.get(i) * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY);
+                float y = mBottomLineY - mDataBeanList.get(i).getValue() * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY);
                 if (i == 0) {
                     mPath.moveTo(x, y);
                 } else {
@@ -172,23 +168,56 @@ public class PMMonthLineAreaChart extends View {
 
     }
 
-    public void setDataBean(List<Integer> dataBeanList) {
-        if (dataBeanList == null) {
-            return;
-        }
+    /**
+     * 补齐缺失的日期的数据为默认0,排序,求最大值
+     * 这样方便后面draw操作
+     *
+     * @param dataBeanList
+     * @param anyTimeOfThisMonthInMill
+     */
+    public void setDataBean(List<PMMonthLineAreaBean> dataBeanList, long anyTimeOfThisMonthInMill) {
+        setupXLegendArray(anyTimeOfThisMonthInMill);
+
         if (mDataBeanList == null) {
             mDataBeanList = new ArrayList<>();
         } else {
             mDataBeanList.clear();
         }
-        mDataBeanList.addAll(dataBeanList);
-        mMaxStepValue = Collections.max(mDataBeanList, new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o1 < o2 ? -1 : (o1.equals(o2) ? 0 : 1);
+        if (dataBeanList != null) {
+            //补全缺失的日期数据为默认0
+            for (int s : mXLegendArray) {
+                boolean exists = false;
+                for (PMMonthLineAreaBean bean : dataBeanList) {
+                    if (bean.getDayOfMonth() == s) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    dataBeanList.add(new PMMonthLineAreaBean(s, 0));
+                }
             }
-        });
-        mMaxStepValue = (mMaxStepValue / 1000 + 1) * 1000;//去掉十位数
+
+            //排序
+            Collections.sort(dataBeanList, new Comparator<PMMonthLineAreaBean>() {
+                @Override
+                public int compare(PMMonthLineAreaBean o1, PMMonthLineAreaBean o2) {
+                    int o1DayOfMonth = o1.getDayOfMonth();
+                    int o2DayOfMonth = o2.getDayOfMonth();
+                    return o1DayOfMonth < o2DayOfMonth ? -1 : (o1DayOfMonth == o2DayOfMonth ? 0 : 1);
+                }
+            });
+            mDataBeanList.addAll(dataBeanList);
+            //找最大值
+            PMMonthLineAreaBean maxTemp = Collections.max(mDataBeanList, new Comparator<PMMonthLineAreaBean>() {
+                @Override
+                public int compare(PMMonthLineAreaBean o1, PMMonthLineAreaBean o2) {
+                    return o1.getValue() < o2.getValue() ? -1 : (o1.getValue() == o2.getValue() ? 0 : 1);
+                }
+            });
+            mMaxStepValue = (maxTemp.getValue() / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;//去掉十位数
+        }
+
 
         initParams();
 
@@ -211,6 +240,21 @@ public class PMMonthLineAreaChart extends View {
     }
 
     /**
+     * 根据当前月份,设置X轴日期
+     *
+     * @param anyTimeOfThisMonthInMill
+     */
+    private void setupXLegendArray(long anyTimeOfThisMonthInMill) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(anyTimeOfThisMonthInMill);
+        int daysOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        mXLegendArray = new int[daysOfMonth];
+        for (int i = 0; i < daysOfMonth; i++) {
+            mXLegendArray[i] = i + 1;
+        }
+    }
+
+    /**
      * 根据数据动态计算y轴数字中最大的长度
      *
      * @return
@@ -230,7 +274,7 @@ public class PMMonthLineAreaChart extends View {
     private void drawXLegend(Canvas canvas) {
         for (int i = 0; i < mXLegendArray.length; i += 2) {
             float x = getDateLegendX(i);
-            String timeStr = mXLegendArray[i];
+            String timeStr = String.valueOf(mXLegendArray[i]);
             canvas.drawText(timeStr, x, mBottomLineY + 3 * mNumberTextHeightPx / 2, mTextPaint);
         }
     }
