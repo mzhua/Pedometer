@@ -95,13 +95,13 @@ public class HomeActivity extends BaseActivity {
                 Fragment fragment = null;
                 switch (position) {
                     case 0:
-                        fragment = new PMDailyFragment();
+                        fragment = PMDailyFragment.newInstance();
                         break;
                     case 1:
-                        fragment = new PMWeeklyFragment();
+                        fragment = PMWeeklyFragment.newInstance();
                         break;
                     case 2:
-                        fragment = new PMMonthlyFragment();
+                        fragment = PMMonthlyFragment.newInstance();
                         break;
                 }
 

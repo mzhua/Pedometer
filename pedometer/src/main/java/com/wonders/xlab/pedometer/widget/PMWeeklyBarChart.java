@@ -215,20 +215,7 @@ public class PMWeeklyBarChart extends View {
         }
 
         if (dataList != null) {
-            int[] daysOfWeek = new int[]{Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
-            for (int i : daysOfWeek) {
-                boolean exists = false;
-                for (PMWeeklyBarChartBean bean : dataList) {
-                    if (i == bean.getDayOfWeek()) {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (!exists) {
-                    PMWeeklyBarChartBean bean = new PMWeeklyBarChartBean(i, 0);
-                    dataList.add(bean);
-                }
-            }
+            makeUpMissDaysOfWeek(dataList);
             mDataList.addAll(dataList);
             mMaxValue = getMaxValueOfDataList(dataList);
             Collections.sort(mDataList, new Comparator<PMWeeklyBarChartBean>() {
@@ -259,6 +246,27 @@ public class PMWeeklyBarChart extends View {
         initParams();
 
         startBarAnimator();
+    }
+
+    /**
+     * 对于没有数据的日期,默认添加一条value为0的记录,并且最终按照日期排序,方便后面draw时直接使用
+     * @param dataList
+     */
+    private void makeUpMissDaysOfWeek(List<PMWeeklyBarChartBean> dataList) {
+        int[] daysOfWeek = new int[]{Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY};
+        for (int i : daysOfWeek) {
+            boolean exists = false;
+            for (PMWeeklyBarChartBean bean : dataList) {
+                if (i == bean.getDayOfWeek()) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                PMWeeklyBarChartBean bean = new PMWeeklyBarChartBean(i, 0);
+                dataList.add(bean);
+            }
+        }
     }
 
     /**

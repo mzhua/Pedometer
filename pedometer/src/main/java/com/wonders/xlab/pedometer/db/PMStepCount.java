@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMContract.StepCountEntry;
+import com.wonders.xlab.pedometer.util.DateFormatUtil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -71,6 +72,7 @@ public class PMStepCount {
         }
         return instance;
     }
+
 
     /**
      * 如果该条记录前{@link #INTERVAL_IN_MILL}毫秒内存在记录,则合并为一条记录,步数在那一条的基础上加一,否则新开一条记录

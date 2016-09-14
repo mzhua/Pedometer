@@ -116,6 +116,62 @@ public class PMMonthLineAreaChart extends View {
 
     private ValueAnimator mBarAnimator;
 
+    private float mYLegendLeft;
+    private float mChartLeft;
+    private float mChartRight;
+
+    private float mBottomLineY;
+    private float mTopLineY;
+
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mYLegendLeft = getPaddingLeft();
+        mChartRight = getMeasuredWidth() - getPaddingRight();
+
+        initParams();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawSplitters(canvas);
+        drawXLegend(canvas);
+        drawLineArea(canvas);
+        drawLeftLegend(canvas);
+    }
+
+    private void initParams() {
+        mChartLeft = (int) (mYLegendLeft + 3 * getMaxYLegendWidth() / 2);
+        int offsetBottom = 3 * mNumberTextHeightPx / 2 + getPaddingBottom();
+        mBottomLineY = getMeasuredHeight() - mBottomLineWidthInPx / 2 - offsetBottom;
+        mTopLineY = mDotLineWidthInPx / 2 + getPaddingTop() + 2 * mNumberTextHeightPx;//包括top padding,三角形,以及三角形上面的数字
+
+        if (mDataBeanList != null && mDataBeanList.size() >= mXLegendArray.length) {
+            if (mPath != null) {
+                if (!mPath.isEmpty()) {
+                    mPath.reset();
+                }
+            } else {
+                mPath = new Path();
+            }
+            for (int i = 0; i < mXLegendArray.length; i++) {
+                float x = getDateLegendX(i);
+                float y = mBottomLineY - mDataBeanList.get(i) * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY);
+                if (i == 0) {
+                    mPath.moveTo(x, y);
+                } else {
+                    mPath.lineTo(x, y);
+                }
+            }
+            mPath.lineTo(getDateLegendX(mXLegendArray.length - 1), mBottomLineY);
+            mPath.lineTo(mChartLeft, mBottomLineY);
+            mPath.close();
+        }
+
+    }
+
     public void setDataBean(List<Integer> dataBeanList) {
         if (dataBeanList == null) {
             return;
@@ -154,53 +210,6 @@ public class PMMonthLineAreaChart extends View {
 
     }
 
-    private float mYLegendLeft;
-    private float mChartLeft;
-    private float mChartRight;
-
-    private float mBottomLineY;
-    private float mTopLineY;
-
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        mYLegendLeft = getPaddingLeft();
-        mChartRight = getMeasuredWidth() - getPaddingRight();
-
-        initParams();
-    }
-
-    private void initParams() {
-        mChartLeft = (int) (mYLegendLeft + 3 * getMaxYLegendWidth() / 2);
-        int offsetBottom = 3 * mNumberTextHeightPx / 2 + getPaddingBottom();
-        mBottomLineY = getMeasuredHeight() - mBottomLineWidthInPx / 2 - offsetBottom;
-        mTopLineY = mDotLineWidthInPx / 2 + getPaddingTop() + 2 * mNumberTextHeightPx;//包括top padding,三角形,以及三角形上面的数字
-
-        if (mDataBeanList != null && mDataBeanList.size() >= mXLegendArray.length) {
-            if (mPath != null) {
-                if (!mPath.isEmpty()) {
-                    mPath.reset();
-                }
-            } else {
-                mPath = new Path();
-            }
-            for (int i = 0; i < mXLegendArray.length; i++) {
-                float x = getDateLegendX(i);
-                float y = mBottomLineY - mDataBeanList.get(i) * 1.0f / mMaxStepValue * (mBottomLineY - mTopLineY);
-                if (i == 0) {
-                    mPath.moveTo(x, y);
-                } else {
-                    mPath.lineTo(x, y);
-                }
-            }
-            mPath.lineTo(getDateLegendX(mXLegendArray.length - 1), mBottomLineY);
-            mPath.lineTo(mChartLeft, mBottomLineY);
-            mPath.close();
-        }
-
-    }
-
     /**
      * 根据数据动态计算y轴数字中最大的长度
      *
@@ -208,15 +217,6 @@ public class PMMonthLineAreaChart extends View {
      */
     private float getMaxYLegendWidth() {
         return mTextPaint.measureText(String.valueOf(mMaxStepValue));
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawSplitters(canvas);
-        drawXLegend(canvas);
-        drawLineArea(canvas);
-        drawLeftLegend(canvas);
     }
 
     private void drawLineArea(Canvas canvas) {

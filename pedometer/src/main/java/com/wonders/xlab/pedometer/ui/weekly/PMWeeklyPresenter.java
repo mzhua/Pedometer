@@ -1,6 +1,7 @@
 package com.wonders.xlab.pedometer.ui.weekly;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
 import com.wonders.xlab.pedometer.base.BasePresenter;
@@ -8,6 +9,7 @@ import com.wonders.xlab.pedometer.base.DefaultException;
 import com.wonders.xlab.pedometer.data.PMStepCountContract;
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.util.DateFormatUtil;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
 import java.util.ArrayList;
@@ -34,12 +36,12 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepCountContr
                 if (pmStepCountEntities != null && pmStepCountEntities.size() > 0) {
                     dataList = new ArrayList<>();
                     Calendar calendar = Calendar.getInstance();
+
                     //just in case, take the first seven records
                     for (int i = 0; i < Math.min(pmStepCountEntities.size(), 6); i++) {
                         PMStepCountEntity entity = pmStepCountEntities.get(i);
                         int counts = entity.getStepCounts();
                         sumStep += counts;
-
                         calendar.setTimeInMillis(entity.getUpdateTimeInMill());
                         PMWeeklyBarChartBean bean = new PMWeeklyBarChartBean();
                         bean.setValue(counts);

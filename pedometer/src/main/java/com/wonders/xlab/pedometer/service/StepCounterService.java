@@ -8,8 +8,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMStepCount;
@@ -53,7 +51,7 @@ public class StepCounterService extends Service {
             detector.addStepListener(new StepListener() {
                 @Override
                 public void onStep(SensorEvent event) {
-                    increaseStepCountByOne(event);
+                    increaseStepCountByOne();
                 }
             });
             mSensorEventListener = detector;
@@ -69,7 +67,7 @@ public class StepCounterService extends Service {
     class OfficialStepDetector implements SensorEventListener {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            increaseStepCountByOne(event);
+            increaseStepCountByOne();
         }
 
         @Override
@@ -81,10 +79,8 @@ public class StepCounterService extends Service {
     /**
      * 步数加一
      */
-    private void increaseStepCountByOne(SensorEvent event) {
-        long timeInMillis = System.currentTimeMillis()
-                + (event.timestamp - System.nanoTime()) / 1000000L;
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(timeInMillis, 1));
+    private void increaseStepCountByOne() {
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 1));
 
     }
 
