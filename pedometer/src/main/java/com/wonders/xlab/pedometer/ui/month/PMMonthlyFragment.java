@@ -41,7 +41,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     }
 
     @Override
-    public void refreshView() {
+    public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
             getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.MONTH);
         }

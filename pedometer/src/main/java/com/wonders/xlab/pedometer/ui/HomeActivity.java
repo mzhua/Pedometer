@@ -106,7 +106,7 @@ public class HomeActivity extends BaseActivity {
             for (int i = 0; i < adapter.getCount(); i++) {
                 Fragment item = adapter.getItem(i);
                 if (item instanceof MVPFragment) {
-                    ((MVPFragment) item).refreshView();
+                    ((MVPFragment) item).refreshView(, );
                 }
             }
         }

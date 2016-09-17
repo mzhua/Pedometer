@@ -9,8 +9,10 @@ public abstract class MVPFragment<P extends BaseContract.Presenter> extends Base
 
     /**
      * for the step broadcast to trigger view refresh
+     * @param startTimeInMill
+     * @param endTimeInMill
      */
-    public abstract void refreshView();
+    public abstract void refreshView(long startTimeInMill, long endTimeInMill);
 
     protected abstract boolean hasViewCreated();
 

@@ -41,7 +41,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
     }
 
     @Override
-    public void refreshView() {
+    public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
             getPresenter().getDatas(getStartTimeInMillOfDay(System.currentTimeMillis()),getEndTimeInMillOfDay(System.currentTimeMillis()), PMStepCount.DataType.DAY);
         }
