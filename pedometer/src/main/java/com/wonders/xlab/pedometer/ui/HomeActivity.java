@@ -1,6 +1,9 @@
 package com.wonders.xlab.pedometer.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +25,7 @@ import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.format.TitleFormatter;
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.BaseActivity;
+import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
@@ -47,6 +51,8 @@ public class HomeActivity extends BaseActivity {
     private DayFormat mDayFormat = new DayFormat();
 
     private SimpleDateFormat mMonthDayFormat;
+
+    private StepBroadcastReceiver mStepBroadcastReceiver;
 
     public void takeAWalk(View view) {
         PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 1));
@@ -86,6 +92,24 @@ public class HomeActivity extends BaseActivity {
         initTitleView();
         initCalendarPopupWindow();
         initViewPager();
+
+        IntentFilter intentFilter = new IntentFilter(getPackageName() + ".pm.step.broadcast");
+        mStepBroadcastReceiver = new StepBroadcastReceiver();
+        registerReceiver(mStepBroadcastReceiver, intentFilter);
+    }
+
+    class StepBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            FragmentStatePagerAdapter adapter = (FragmentStatePagerAdapter) mViewPager.getAdapter();
+            for (int i = 0; i < adapter.getCount(); i++) {
+                Fragment item = adapter.getItem(i);
+                if (item instanceof MVPFragment) {
+                    ((MVPFragment) item).refreshView();
+                }
+            }
+        }
     }
 
     private void initViewPager() {
@@ -223,5 +247,13 @@ public class HomeActivity extends BaseActivity {
         shareIntent.putExtra(Intent.EXTRA_STREAM, uriToImage);
         shareIntent.setType("image/*");
         startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.pm_share_to)));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (null != mStepBroadcastReceiver) {
+            unregisterReceiver(mStepBroadcastReceiver);
+        }
     }
 }

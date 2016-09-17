@@ -41,6 +41,18 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     }
 
     @Override
+    public void refreshView() {
+        if (hasViewCreated()) {
+            getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.MONTH);
+        }
+    }
+
+    @Override
+    protected boolean hasViewCreated() {
+        return null != mAreaChart;
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
@@ -58,7 +70,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
         mAreaChart = (PMMonthLineAreaChart) view.findViewById(R.id.lineAreaChart);
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
-        getPresenter().getDatas(0,System.currentTimeMillis(), PMStepCount.DataType.MONTH);
+        getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.MONTH);
     }
 
     @Override

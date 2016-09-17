@@ -7,6 +7,13 @@ public abstract class MVPFragment<P extends BaseContract.Presenter> extends Base
 
     public abstract P getPresenter();
 
+    /**
+     * for the step broadcast to trigger view refresh
+     */
+    public abstract void refreshView();
+
+    protected abstract boolean hasViewCreated();
+
     @Override
     public void onDestroy() {
         super.onDestroy();

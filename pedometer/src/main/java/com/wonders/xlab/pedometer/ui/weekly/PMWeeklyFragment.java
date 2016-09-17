@@ -30,6 +30,18 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
         return mPresenter;
     }
 
+    @Override
+    public void refreshView() {
+        if (hasViewCreated()) {
+            getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.WEEK);
+        }
+    }
+
+    @Override
+    protected boolean hasViewCreated() {
+        return null != mBarChart;
+    }
+
     public PMWeeklyFragment() {
         // Required empty public constructor
     }
@@ -57,7 +69,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
         mBarChart = (PMWeeklyBarChart) view.findViewById(R.id.barChart);
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
-        getPresenter().getDatas(0,System.currentTimeMillis(), PMStepCount.DataType.WEEK);
+        getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.WEEK);
     }
 
     @Override

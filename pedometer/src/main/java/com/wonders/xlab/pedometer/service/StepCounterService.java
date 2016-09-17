@@ -22,6 +22,8 @@ public class StepCounterService extends Service {
     private SensorManager mSensorManager;// 传感器服务
     private SensorEventListener mSensorEventListener;// 传感器监听对象
 
+    private Intent mBroadcastIntent;
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO Auto-generated method stub
@@ -61,6 +63,7 @@ public class StepCounterService extends Service {
                     SensorManager.SENSOR_DELAY_FASTEST);
         }
 
+        mBroadcastIntent = new Intent(getPackageName()+".pm.step.broadcast");
 
     }
 
@@ -76,12 +79,13 @@ public class StepCounterService extends Service {
         }
     }
 
+
     /**
      * 步数加一
      */
     private void increaseStepCountByOne() {
         PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 1));
-
+        sendBroadcast(mBroadcastIntent);
     }
 
     @Override

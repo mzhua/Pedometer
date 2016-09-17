@@ -14,10 +14,8 @@ import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.widget.PMDailyBarChart;
 import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Random;
 
 public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PMDailyContract.View {
     private PMDailyRingChart mRingChart;
@@ -40,6 +38,18 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
             mPresenter = new PMDailyPresenter(this, new PMStepCountModel(PMStepCount.getInstance(getActivity())));
         }
         return mPresenter;
+    }
+
+    @Override
+    public void refreshView() {
+        if (hasViewCreated()) {
+            getPresenter().getDatas(getStartTimeInMillOfDay(System.currentTimeMillis()),getEndTimeInMillOfDay(System.currentTimeMillis()), PMStepCount.DataType.DAY);
+        }
+    }
+
+    @Override
+    protected boolean hasViewCreated() {
+        return mRingChart != null && mBarChart != null;
     }
 
     @Override
@@ -86,7 +96,6 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
     @Override
     public void showDailyData(int totalStepCounts, int calorie, int distanceInKm, List<PMStepCountEntity> entityList) {
         mRingChart.startWithStepCounts(totalStepCounts);
-
         mBarChart.setDataBeanList(entityList);
     }
 }
