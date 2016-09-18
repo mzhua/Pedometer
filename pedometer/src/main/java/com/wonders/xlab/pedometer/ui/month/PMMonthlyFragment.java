@@ -11,6 +11,7 @@ import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.data.PMStepCountModel;
 import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.widget.PMMonthLineAreaBean;
 import com.wonders.xlab.pedometer.widget.PMMonthLineAreaChart;
 
@@ -43,7 +44,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.MONTH);
+            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepCount.DataType.MONTH);
         }
     }
 
@@ -70,7 +71,8 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
         mAreaChart = (PMMonthLineAreaChart) view.findViewById(R.id.lineAreaChart);
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
-        getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.MONTH);
+        long timeInMill = System.currentTimeMillis();
+        getPresenter().getDatas(DateUtil.getBeginTimeOfMonthInMill(timeInMill), DateUtil.getEndTimeOfMonthInMill(timeInMill), PMStepCount.DataType.MONTH);
     }
 
     @Override

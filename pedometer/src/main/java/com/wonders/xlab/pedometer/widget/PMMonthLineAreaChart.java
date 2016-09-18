@@ -164,6 +164,10 @@ public class PMMonthLineAreaChart extends View {
             mPath.lineTo(getDateLegendX(mXLegendArray.length - 1), mBottomLineY);
             mPath.lineTo(mChartLeft, mBottomLineY);
             mPath.close();
+        } else {
+            if (mPath != null) {
+                mPath.reset();
+            }
         }
 
     }
@@ -215,7 +219,7 @@ public class PMMonthLineAreaChart extends View {
                     return o1.getValue() < o2.getValue() ? -1 : (o1.getValue() == o2.getValue() ? 0 : 1);
                 }
             });
-            mMaxStepValue = (maxTemp.getValue() / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;//去掉十位数
+            mMaxStepValue = Math.max(maxTemp.getValue(),DEFAULT_MAX_VALUE);
         }
 
 

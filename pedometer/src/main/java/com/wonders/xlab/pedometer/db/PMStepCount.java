@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.db.PMContract.StepCountEntry;
-import com.wonders.xlab.pedometer.util.DateFormatUtil;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

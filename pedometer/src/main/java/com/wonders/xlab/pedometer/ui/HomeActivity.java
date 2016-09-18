@@ -7,76 +7,48 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.prolificinteractive.materialcalendarview.CalendarDay;
-import com.prolificinteractive.materialcalendarview.CalendarMode;
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
-import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
-import com.prolificinteractive.materialcalendarview.format.TitleFormatter;
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.base.MVPFragment;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMStepCount;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
 import com.wonders.xlab.pedometer.util.FileUtil;
-import com.wonders.xlab.pedometer.widget.CalendarPopupWindow;
-import com.wonders.xlab.pedometer.widget.RelativePopupWindow;
 import com.wonders.xlab.pedometer.widget.XToolBarLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+
+import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Daily;
+import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Monthly;
+import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Weekly;
 
 public class HomeActivity extends BaseActivity {
 
     private XToolBarLayout mToolBarLayout;
     private ViewPager mViewPager;
-    private CalendarPopupWindow mCalendarPopupWindow;
-    private DayFormat mDayFormat = new DayFormat();
-
-    private SimpleDateFormat mMonthDayFormat;
 
     private StepBroadcastReceiver mStepBroadcastReceiver;
-
-    public void takeAWalk(View view) {
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 1));
-        recreate();
-    }
-
-    class DayFormat implements TitleFormatter {
-
-        @Override
-        public CharSequence format(CalendarDay day) {
-            return (day.getMonth() + 1) + "月" + day.getDay() + "日";
-        }
-    }
-
-    private View mDailyTitleView;
-    private View mWeekTitleView;
-    private View mMonthTitleView;
+    private PMDailyFragment mDailyFragment;
+    private PMWeeklyFragment mWeeklyFragment;
+    private PMMonthlyFragment mMonthlyFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        mMonthDayFormat = new SimpleDateFormat("MM月dd日", Locale.CHINA);
+        mDailyFragment = PMDailyFragment.newInstance();
+        mWeeklyFragment = PMWeeklyFragment.newInstance();
+        mMonthlyFragment = PMMonthlyFragment.newInstance();
 
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
@@ -90,7 +62,6 @@ public class HomeActivity extends BaseActivity {
         });
 
         initTitleView();
-        initCalendarPopupWindow();
         initViewPager();
 
         IntentFilter intentFilter = new IntentFilter(getPackageName() + ".pm.step.broadcast");
@@ -104,9 +75,9 @@ public class HomeActivity extends BaseActivity {
         public void onReceive(Context context, Intent intent) {
             FragmentStatePagerAdapter adapter = (FragmentStatePagerAdapter) mViewPager.getAdapter();
             for (int i = 0; i < adapter.getCount(); i++) {
-                Fragment item = adapter.getItem(i);
+                Fragment item = (Fragment) adapter.instantiateItem(mViewPager, i);
                 if (item instanceof MVPFragment) {
-                    ((MVPFragment) item).refreshView(, );
+                    ((MVPFragment) item).refreshView(0, System.currentTimeMillis());
                 }
             }
         }
@@ -119,13 +90,13 @@ public class HomeActivity extends BaseActivity {
                 Fragment fragment = null;
                 switch (position) {
                     case 0:
-                        fragment = PMDailyFragment.newInstance();
+                        fragment = mDailyFragment;
                         break;
                     case 1:
-                        fragment = PMWeeklyFragment.newInstance();
+                        fragment = mWeeklyFragment;
                         break;
                     case 2:
-                        fragment = PMMonthlyFragment.newInstance();
+                        fragment = mMonthlyFragment;
                         break;
                 }
 
@@ -143,13 +114,13 @@ public class HomeActivity extends BaseActivity {
                 super.onPageSelected(position);
                 switch (position) {
                     case 0:
-                        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
+                        mToolBarLayout.showTitleView(Daily);
                         break;
                     case 1:
-                        mToolBarLayout.setTitleView(mWeekTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
+                        mToolBarLayout.showTitleView(Weekly);
                         break;
                     case 2:
-                        mToolBarLayout.setTitleView(mMonthTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
+                        mToolBarLayout.showTitleView(Monthly);
                         break;
                 }
             }
@@ -157,40 +128,27 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void initTitleView() {
-        mDailyTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_daily, null, false);
-        mWeekTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_week, null, false);
-        mMonthTitleView = LayoutInflater.from(this).inflate(R.layout.pm_title_view_month, null, false);
-
-        ((TextView) mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(new Date()));
-        mToolBarLayout.setTitleView(mDailyTitleView, XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER);
-
-        mDailyTitleView.setOnClickListener(new View.OnClickListener() {
+        mToolBarLayout.showTitleView(Daily);
+        mToolBarLayout.setDailyTitleViewListener(new XToolBarLayout.OnDailyTitleViewDateChangeListener() {
             @Override
-            public void onClick(View v) {
-                mCalendarPopupWindow.showOnAnchor(mToolBarLayout, RelativePopupWindow.VerticalPosition.ALIGN_TOP, RelativePopupWindow.HorizontalPosition.LEFT);
+            public void onDateChange(long startTimeInMill, long endTimeInMill) {
+                mDailyFragment.refreshView(startTimeInMill, endTimeInMill);
             }
         });
-    }
+        mToolBarLayout.setWeeklyTitleViewListener(new XToolBarLayout.OnTitleArrowClickListener() {
 
-    private void initCalendarPopupWindow() {
-        mCalendarPopupWindow = new CalendarPopupWindow(this);
-        mCalendarPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        mCalendarPopupWindow.setupCalendarView(mDayFormat, CalendarMode.MONTHS);
-        mCalendarPopupWindow.setOnDateSelectedListener(new OnDateSelectedListener() {
             @Override
-            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-                mCalendarPopupWindow.dismiss();
-                ((TextView) mDailyTitleView.findViewById(R.id.tvDailyTitle)).setText(mMonthDayFormat.format(date.getDate()));
+            public void onClick(long startTimeInMill, long endTimeInMill) {
+                mWeeklyFragment.refreshView(startTimeInMill, endTimeInMill);
             }
         });
-    }
+        mToolBarLayout.setMonthlyTitleViewListener(new XToolBarLayout.OnTitleArrowClickListener() {
 
-    @Override
-    public void onBackPressed() {
-        if (!mCalendarPopupWindow.isShowing()) {
-            super.onBackPressed();
-        }
+            @Override
+            public void onClick(long startTimeInMill, long endTimeInMill) {
+                mMonthlyFragment.refreshView(startTimeInMill, endTimeInMill);
+            }
+        });
     }
 
     @Override

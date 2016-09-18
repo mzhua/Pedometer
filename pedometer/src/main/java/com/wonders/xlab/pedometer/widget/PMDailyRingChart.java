@@ -349,30 +349,13 @@ public class PMDailyRingChart extends View {
 
     private ValueAnimator mDripAnimator;
 
-    private void setTargetAngle(@FloatRange(from = 0f, to = 360f) final float angle) {
-        mDripCurrentAngle = 0;
-
-        if (mDripAnimator != null && mDripAnimator.isRunning()) {
-            mDripAnimator.cancel();
-        }
-        mDripAnimator = ValueAnimator.ofFloat(0f, angle);
-        mDripAnimator.setDuration(1600);
-        mDripAnimator.setInterpolator(new OvershootInterpolator(0.5f));
-        mDripAnimator.start();
-        mDripAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mDripCurrentAngle = (float) animation.getAnimatedValue();
-                mCurrentDripIndicatorValue = (int) (mDripCurrentAngle * mStepPerAngle);
-                if (null != mOnUpdateListener) {
-                    mOnUpdateListener.onChange(mCurrentDripIndicatorValue, 1.0f * mCurrentDripIndicatorValue / mDividerValueMax);
-                }
-                postInvalidate();
-            }
-        });
-    }
-
+    /**
+     * 每一度对应的value
+     */
     private float mAnglePerStep;
+    /**
+     * 每单位value对应的角度
+     */
     private float mStepPerAngle;
 
     /**
@@ -394,7 +377,34 @@ public class PMDailyRingChart extends View {
         mAnglePerStep = mSweepAngle / mDividerValueMax;
         this.mDividerIntervalAngle = mDividerValueMax / (DEFAULT_DIVIDER_COUNTS - 1) * mAnglePerStep;
         this.mDividerIntervalStepCounts = mDividerValueMax / (DEFAULT_DIVIDER_COUNTS - 1);
+
+
+        //-----
+        float oldAngle = mAnglePerStep * this.mStepCounts;
+        float angle = mAnglePerStep * stepCounts;
+
         this.mStepCounts = stepCounts;
-        setTargetAngle(mAnglePerStep * stepCounts);
+
+        mDripCurrentAngle = 0;
+
+        if (mDripAnimator != null && mDripAnimator.isRunning()) {
+            mDripAnimator.cancel();
+        }
+        mDripAnimator = ValueAnimator.ofFloat(oldAngle, angle);
+        mDripAnimator.setDuration(1600);
+        mDripAnimator.setInterpolator(new OvershootInterpolator(0.5f));
+        mDripAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mDripCurrentAngle = (float) animation.getAnimatedValue();
+                mCurrentDripIndicatorValue = (int) (mDripCurrentAngle * mStepPerAngle);
+                if (null != mOnUpdateListener) {
+                    mOnUpdateListener.onChange(mCurrentDripIndicatorValue, 1.0f * mCurrentDripIndicatorValue / mDividerValueMax);
+                }
+                postInvalidate();
+            }
+        });
+        mDripAnimator.start();
+
     }
 }

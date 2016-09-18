@@ -214,10 +214,14 @@ public class PMWeeklyBarChart extends View {
             mDataList.clear();
         }
 
+        int actualMaxValue = 0;//实际数据的最大值
+        int oldMaxValue = 0;
         if (dataList != null) {
+            actualMaxValue = getMaxValueOfDataList(dataList);
+
             makeUpMissDaysOfWeek(dataList);
+
             mDataList.addAll(dataList);
-            mMaxValue = getMaxValueOfDataList(dataList);
             Collections.sort(mDataList, new Comparator<PMWeeklyBarChartBean>() {
                 @Override
                 public int compare(PMWeeklyBarChartBean o1, PMWeeklyBarChartBean o2) {
@@ -240,16 +244,37 @@ public class PMWeeklyBarChart extends View {
                 }
             });
         }
+        float consumedFraction = 0f;
+        if (actualMaxValue != 0) {
+            consumedFraction = oldMaxValue * 1.0f / actualMaxValue;
+        }
 
-        mMaxValue = (mMaxValue / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;
+        mMaxValue = Math.max(actualMaxValue, DEFAULT_MAX_VALUE);
+        oldMaxValue = mMaxValue;
 
         initParams();
 
-        startBarAnimator();
+        //start animation
+        if (mBarAnimator != null && mBarAnimator.isRunning()) {
+            mBarAnimator.cancel();
+        }
+
+        mBarAnimator = ValueAnimator.ofFloat(consumedFraction, 1.0f);
+        mBarAnimator.setDuration(800);
+        mBarAnimator.setInterpolator(new DecelerateInterpolator());
+        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBarHeightFraction = (float) animation.getAnimatedValue();
+                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
+            }
+        });
+        mBarAnimator.start();
     }
 
     /**
      * 对于没有数据的日期,默认添加一条value为0的记录,并且最终按照日期排序,方便后面draw时直接使用
+     *
      * @param dataList
      */
     private void makeUpMissDaysOfWeek(List<PMWeeklyBarChartBean> dataList) {
@@ -287,23 +312,6 @@ public class PMWeeklyBarChart extends View {
             maxValue = tmpMax.getValue();
         }
         return maxValue;
-    }
-
-    private void startBarAnimator() {
-        if (mBarAnimator != null && mBarAnimator.isRunning()) {
-            mBarAnimator.cancel();
-        }
-        mBarAnimator = ValueAnimator.ofInt(mMaxValue);
-        mBarAnimator.setDuration(800);
-        mBarAnimator.setInterpolator(new DecelerateInterpolator());
-        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBarHeightFraction = animation.getAnimatedFraction();
-                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
-            }
-        });
-        mBarAnimator.start();
     }
 
     /**

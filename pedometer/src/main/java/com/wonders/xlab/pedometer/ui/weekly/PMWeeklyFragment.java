@@ -33,7 +33,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.WEEK);
+            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepCount.DataType.WEEK);
         }
     }
 

@@ -11,6 +11,7 @@ import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.data.PMStepCountModel;
 import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.widget.PMDailyBarChart;
 import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
@@ -43,7 +44,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(getStartTimeInMillOfDay(System.currentTimeMillis()),getEndTimeInMillOfDay(System.currentTimeMillis()), PMStepCount.DataType.DAY);
+            getPresenter().getDatas(startTimeInMill,endTimeInMill, PMStepCount.DataType.DAY);
         }
     }
 
@@ -70,27 +71,8 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
         mBarChart = (PMDailyBarChart) view.findViewById(R.id.barChart);
         mRingChart = (PMDailyRingChart) view.findViewById(R.id.walkChart);
 
-        getPresenter().getDatas(getStartTimeInMillOfDay(System.currentTimeMillis()),getEndTimeInMillOfDay(System.currentTimeMillis()), PMStepCount.DataType.DAY);
-    }
-
-    private long getStartTimeInMillOfDay(long anyTimeOfDayInMill){
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(anyTimeOfDayInMill);
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
-        return calendar.getTimeInMillis();
-    }
-
-    private long getEndTimeInMillOfDay(long anyTimeOfDayInMill){
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(anyTimeOfDayInMill);
-        calendar.set(Calendar.HOUR_OF_DAY,23);
-        calendar.set(Calendar.MINUTE,59);
-        calendar.set(Calendar.SECOND,59);
-        calendar.set(Calendar.MILLISECOND,999);
-        return calendar.getTimeInMillis();
+        Calendar instance = Calendar.getInstance();
+        getPresenter().getDatas(DateUtil.getBeginTimeOfDayInMill(instance),DateUtil.getEndTimeOfDayInMill(instance), PMStepCount.DataType.DAY);
     }
 
     @Override
