@@ -206,6 +206,8 @@ public class PMWeeklyBarChart extends View {
 
     }
 
+    private int actualMaxValue = 0;//实际数据的最大值
+
     public void setDataBeanList(List<PMWeeklyBarChartBean> dataList) {
 
         if (mDataList == null) {
@@ -214,8 +216,7 @@ public class PMWeeklyBarChart extends View {
             mDataList.clear();
         }
 
-        int actualMaxValue = 0;//实际数据的最大值
-        int oldMaxValue = 0;
+        int oldMaxValue = actualMaxValue;
         if (dataList != null) {
             actualMaxValue = getMaxValueOfDataList(dataList);
 
@@ -243,14 +244,11 @@ public class PMWeeklyBarChart extends View {
                     return (o1DayOfWeek < o2DayOfWeek) ? -1 : (o1DayOfWeek == o2DayOfWeek ? 0 : 1);
                 }
             });
-        }
-        float consumedFraction = 0f;
-        if (actualMaxValue != 0) {
-            consumedFraction = oldMaxValue * 1.0f / actualMaxValue;
+        } else {
+            actualMaxValue = 0;
         }
 
         mMaxValue = Math.max(actualMaxValue, DEFAULT_MAX_VALUE);
-        oldMaxValue = mMaxValue;
 
         initParams();
 
@@ -259,7 +257,19 @@ public class PMWeeklyBarChart extends View {
             mBarAnimator.cancel();
         }
 
-        mBarAnimator = ValueAnimator.ofFloat(consumedFraction, 1.0f);
+        float consumedFraction = 0f;
+
+        if (oldMaxValue > actualMaxValue) {
+            if (oldMaxValue != 0) {
+                consumedFraction = actualMaxValue * 1.0f / oldMaxValue;
+            }
+            mBarAnimator = ValueAnimator.ofFloat(1.0f, consumedFraction);
+        } else {
+            if (actualMaxValue != 0) {
+                consumedFraction = oldMaxValue * 1.0f / actualMaxValue;
+            }
+            mBarAnimator = ValueAnimator.ofFloat(consumedFraction, 1.0f);
+        }
         mBarAnimator.setDuration(800);
         mBarAnimator.setInterpolator(new DecelerateInterpolator());
         mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -303,7 +313,7 @@ public class PMWeeklyBarChart extends View {
     private int getMaxValueOfDataList(List<PMWeeklyBarChartBean> dataList) {
         int maxValue = DEFAULT_MAX_VALUE;
         if (dataList.size() > 0) {
-            PMWeeklyBarChartBean tmpMax = Collections.max(mDataList, new Comparator<PMWeeklyBarChartBean>() {
+            PMWeeklyBarChartBean tmpMax = Collections.max(dataList, new Comparator<PMWeeklyBarChartBean>() {
                 @Override
                 public int compare(PMWeeklyBarChartBean o1, PMWeeklyBarChartBean o2) {
                     return (o1.getValue() < o2.getValue()) ? -1 : (o1.getValue() == o2.getValue() ? 0 : 1);
@@ -341,7 +351,7 @@ public class PMWeeklyBarChart extends View {
         for (int i = 0; i < mDataList.size(); i++) {
             PMWeeklyBarChartBean entity = mDataList.get(i);
             float left = getBarXOfPosition(i);
-            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - entity.getValue() * mBarHeightFraction * 1.0f / mMaxValue * (mBottomLineY - mTopLineY), mBarPaint);
+            canvas.drawLine(left, mBottomLineY, left, mBottomLineY - entity.getValue() * mBarHeightFraction / mMaxValue * (mBottomLineY - mTopLineY), mBarPaint);
         }
     }
 
