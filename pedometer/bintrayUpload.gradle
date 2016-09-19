@@ -42,7 +42,7 @@ bintray {
             vcsTag = libVersion
         }
 
-        licenses = ['GPL']
+        licenses = ['GPL-3.0']
         vcsUrl = 'https://gitlab.com/Mzhua/Pedometer.git'
         websiteUrl = 'https://gitlab.com/Mzhua/Pedometer'
     }
