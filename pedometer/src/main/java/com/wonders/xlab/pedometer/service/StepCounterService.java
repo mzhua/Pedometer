@@ -84,7 +84,7 @@ public class StepCounterService extends Service {
      * 步数加一
      */
     private void increaseStepCountByOne() {
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 123));
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 1));
         sendBroadcast(mBroadcastIntent);
     }
 

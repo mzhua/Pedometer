@@ -13,6 +13,7 @@ public class DateUtil {
     private static SimpleDateFormat mDayFormat = new SimpleDateFormat("MM月dd日", Locale.CHINA);
     private static SimpleDateFormat mMonthFormat = new SimpleDateFormat("yyyy年MM月", Locale.CHINA);
     private static Date date = new Date();
+    private static Calendar mCalendar = Calendar.getInstance();
 
     public static String getDayFormatString(long timeInMill) {
         date.setTime(timeInMill);
@@ -29,6 +30,12 @@ public class DateUtil {
         return calendar.getTimeInMillis();
     }
 
+    public static long getBeginTimeOfDayInMill(long timeInMill) {
+        mCalendar.setTimeInMillis(timeInMill);
+        setCalendarToBeginOfDay(mCalendar);
+        return mCalendar.getTimeInMillis();
+    }
+
     private static void setCalendarToBeginOfDay(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
@@ -41,14 +48,18 @@ public class DateUtil {
         return calendar.getTimeInMillis();
     }
 
+    public static long getEndTimeOfDayInMill(long timeInMill) {
+        mCalendar.setTimeInMillis(timeInMill);
+        setCalendarToEndOfDay(mCalendar);
+        return mCalendar.getTimeInMillis();
+    }
+
     private static void setCalendarToEndOfDay(Calendar calendar) {
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
     }
-
-    private static Calendar mCalendar = Calendar.getInstance();
 
     public static long getBeginTimeOfWeekInMill(long timeInMill) {
         mCalendar.setTimeInMillis(timeInMill);

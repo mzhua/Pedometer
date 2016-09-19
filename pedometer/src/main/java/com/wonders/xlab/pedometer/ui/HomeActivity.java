@@ -20,6 +20,7 @@ import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
+import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.util.FileUtil;
 import com.wonders.xlab.pedometer.widget.XToolBarLayout;
 
@@ -52,6 +53,7 @@ public class HomeActivity extends BaseActivity {
 
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
+        mViewPager.setOffscreenPageLimit(3);
 
         setupActionBar(mToolBarLayout.getToolbar());
         mToolBarLayout.getToolbar().setNavigationOnClickListener(new View.OnClickListener() {
@@ -73,13 +75,10 @@ public class HomeActivity extends BaseActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            FragmentStatePagerAdapter adapter = (FragmentStatePagerAdapter) mViewPager.getAdapter();
-            for (int i = 0; i < adapter.getCount(); i++) {
-                Fragment item = (Fragment) adapter.instantiateItem(mViewPager, i);
-                if (item instanceof MVPFragment) {
-                    ((MVPFragment) item).refreshView(0, System.currentTimeMillis());
-                }
-            }
+            long timeMillis = System.currentTimeMillis();
+            mDailyFragment.refreshView(DateUtil.getBeginTimeOfDayInMill(timeMillis),DateUtil.getEndTimeOfDayInMill(timeMillis));
+            mWeeklyFragment.refreshView(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis));
+            mMonthlyFragment.refreshView(DateUtil.getBeginTimeOfMonthInMill(timeMillis),DateUtil.getEndTimeOfMonthInMill(timeMillis));
         }
     }
 
@@ -157,6 +156,11 @@ public class HomeActivity extends BaseActivity {
         return true;
     }
 
+    /**
+     * 菜单图标预处理,与toolbar颜色区分
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         setupMenuIcon(menu.findItem(R.id.menu_share));
@@ -171,6 +175,9 @@ public class HomeActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 截屏分享
+     */
     private void shareViewPager() {
         if (mViewPager.getDrawingCache() != null) {
             mViewPager.destroyDrawingCache();
