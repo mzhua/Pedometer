@@ -15,3 +15,6 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keep class com.wonders.xlab.pedometer.data.PMStepCountEntity {*;}
+-keep class com.wonders.xlab.pedometer.XPedometer {*;}

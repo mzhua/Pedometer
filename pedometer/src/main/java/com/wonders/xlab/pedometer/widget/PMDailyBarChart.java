@@ -103,7 +103,9 @@ public class PMDailyBarChart extends View {
         mBarPaint.setStyle(Paint.Style.STROKE);
     }
 
-    private int mMaxStepValue = 100;
+    private final int DEFAULT_MAX_VALUE = 100;
+
+    private int mMaxStepValue = DEFAULT_MAX_VALUE;
 
     @SuppressLint("UseSparseArrays")
     public void setDataBeanList(List<PMStepCountEntity> PMStepCountEntityList) {
@@ -125,7 +127,7 @@ public class PMDailyBarChart extends View {
                 }
             });
 
-            mMaxStepValue = (max.getStepCounts() / 100 + 1) * 100;//去掉十位数
+            mMaxStepValue = (max.getStepCounts() / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;
         }
 
         invalidate();

@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static android.R.attr.max;
+
 
 /**
  * TODO: document your custom view class.
@@ -248,7 +250,7 @@ public class PMWeeklyBarChart extends View {
             actualMaxValue = 0;
         }
 
-        mMaxValue = Math.max(actualMaxValue, DEFAULT_MAX_VALUE);
+        mMaxValue = (actualMaxValue / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;
 
         initParams();
 

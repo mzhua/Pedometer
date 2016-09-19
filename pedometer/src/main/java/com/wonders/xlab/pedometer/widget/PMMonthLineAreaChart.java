@@ -219,28 +219,10 @@ public class PMMonthLineAreaChart extends View {
                     return o1.getValue() < o2.getValue() ? -1 : (o1.getValue() == o2.getValue() ? 0 : 1);
                 }
             });
-            mMaxStepValue = Math.max(maxTemp.getValue(),DEFAULT_MAX_VALUE);
+            mMaxStepValue = (maxTemp.getValue() / DEFAULT_MAX_VALUE + 1) * DEFAULT_MAX_VALUE;
         }
-
-
         initParams();
-
         invalidate();
-//        if (mBarAnimator != null && mBarAnimator.isRunning()) {
-//            mBarAnimator.cancel();
-//        }
-//        mBarAnimator = ValueAnimator.ofInt(mMaxStepValue);
-//        mBarAnimator.setDuration(800);
-//        mBarAnimator.setInterpolator(new DecelerateInterpolator());
-//        mBarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                mBarHeightFraction = animation.getAnimatedFraction();
-//                postInvalidate((int) mChartLeft, (int) mTopLineY, (int) mChartRight, (int) mBottomLineY);
-//            }
-//        });
-//        mBarAnimator.start();
-
     }
 
     /**

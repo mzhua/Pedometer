@@ -1,10 +1,12 @@
-group = 'com.wonders.xlab.pedometer'
-version = '1.0.0'
+def libVersion = rootProject.ext.libVersion
 
-task generateSourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier 'sources'
-}
+group = 'com.wonders.xlab.pedometer'
+version = libVersion
+
+//task generateSourcesJar(type: Jar) {
+//    from android.sourceSets.main.java.srcDirs
+//    classifier 'sources'
+//}
 
 task generateJavadocs(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
@@ -19,7 +21,7 @@ task generateJavadocsJar(type: Jar, dependsOn: generateJavadocs) {
 
 artifacts {
     archives generateJavadocsJar
-    archives generateSourcesJar
+//    archives generateSourcesJar
 }
 
 Properties properties = new Properties()
@@ -34,10 +36,10 @@ bintray {
         name = 'pedometer'
 
         version {
-            name = '1.0.0'
+            name = libVersion
             desc = "pedometer"
             released = new Date()
-            vcsTag = '1.0.0'
+            vcsTag = libVersion
         }
 
         licenses = ['GPL']
