@@ -1,0 +1,49 @@
+group = 'com.wonders.xlab.pedometer'
+version = '1.0.0'
+
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+task generateJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath()
+            .join(File.pathSeparator))
+}
+
+task generateJavadocsJar(type: Jar, dependsOn: generateJavadocs) {
+    from generateJavadocs.destinationDir
+    classifier 'javadoc'
+}
+
+artifacts {
+    archives generateJavadocsJar
+    archives generateSourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    pkg {
+        repo = 'maven'
+        name = 'pedometer'
+
+        version {
+            name = '1.0.0'
+            desc = "pedometer"
+            released = new Date()
+            vcsTag = '1.0.0'
+        }
+
+        licenses = ['GPL']
+        vcsUrl = 'https://gitlab.com/Mzhua/Pedometer.git'
+        websiteUrl = 'https://gitlab.com/Mzhua/Pedometer'
+    }
+
+    configurations = ['archives']
+}
