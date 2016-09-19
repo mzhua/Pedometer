@@ -90,6 +90,9 @@ public class PMStepCount {
     }
 
     public void insertOrReplaceWithBatchData(List<PMStepCountEntity> entityList) {
+        if (entityList == null || entityList.size() == 0) {
+            return;
+        }
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.beginTransaction();
         for (PMStepCountEntity entity : entityList) {

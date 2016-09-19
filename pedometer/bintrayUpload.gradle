@@ -1,4 +1,4 @@
-def libVersion = rootProject.ext.libVersion
+def libVersion = '1.0.1'
 
 group = 'com.wonders.xlab.pedometer'
 version = libVersion

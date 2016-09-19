@@ -40,7 +40,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="4321"
+                    android:text="0"
                     android:textColor="#328de8"
                     android:textSize="22sp"/>
             </LinearLayout>
@@ -75,7 +75,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="2.5公里"
+                    android:text="0公里"
                     android:textColor="#328de8"
                     android:textSize="22sp"/>
             </LinearLayout>
