@@ -11,6 +11,7 @@ import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.data.PMStepCountModel;
 import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChart;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
@@ -69,7 +70,8 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
         mBarChart = (PMWeeklyBarChart) view.findViewById(R.id.barChart);
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
-        getPresenter().getDatas(0, System.currentTimeMillis(), PMStepCount.DataType.WEEK);
+        long timeMillis = System.currentTimeMillis();
+        getPresenter().getDatas(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis), PMStepCount.DataType.WEEK);
     }
 
     @Override

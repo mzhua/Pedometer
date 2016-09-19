@@ -16,7 +16,6 @@ import android.view.View;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.BaseActivity;
-import com.wonders.xlab.pedometer.base.MVPFragment;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
@@ -32,7 +31,7 @@ import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Daily;
 import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Monthly;
 import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Weekly;
 
-public class HomeActivity extends BaseActivity {
+public class PMHomeActivity extends BaseActivity {
 
     private XToolBarLayout mToolBarLayout;
     private ViewPager mViewPager;
@@ -193,10 +192,10 @@ public class HomeActivity extends BaseActivity {
                 Bitmap bm = mViewPager.getDrawingCache();
                 FileOutputStream outputStream;
                 try {
-                    File file = FileUtil.createTempFile(HomeActivity.this, "share.jpg");
+                    File file = FileUtil.createTempFile(PMHomeActivity.this, "share.jpg");
                     if (file != null) {
                         outputStream = new FileOutputStream(file);
-                        bm.compress(Bitmap.CompressFormat.JPEG, 10, outputStream);
+                        bm.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
                         shareImage(Uri.parse("file:///" + file.getAbsolutePath()));
                     }
                 } catch (IOException e) {
@@ -219,6 +218,7 @@ public class HomeActivity extends BaseActivity {
         super.onDestroy();
         if (null != mStepBroadcastReceiver) {
             unregisterReceiver(mStepBroadcastReceiver);
+            mStepBroadcastReceiver = null;
         }
     }
 }

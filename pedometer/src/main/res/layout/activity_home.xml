@@ -4,7 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@android:color/white"
-                tools:context="com.wonders.xlab.pedometer.ui.HomeActivity">
+                tools:context="com.wonders.xlab.pedometer.ui.PMHomeActivity">
 
     <com.wonders.xlab.pedometer.widget.XToolBarLayout
         android:id="@+id/xtbl"

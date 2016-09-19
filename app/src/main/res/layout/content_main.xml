@@ -12,14 +12,10 @@
     tools:context="com.wonders.xlab.pedometer.demo.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView android:id="@+id/tvStepCounts"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="当前步数:"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="goToPedometer"
-        android:text="计步器"/>
+        android:text="备份"/>
 
 </LinearLayout>

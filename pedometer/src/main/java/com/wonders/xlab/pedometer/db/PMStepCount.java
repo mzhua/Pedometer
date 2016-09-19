@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.ALL;
 import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.DAY;
 import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.MONTH;
 import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.WEEK;
@@ -51,11 +52,12 @@ public class PMStepCount {
     };
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DAY, WEEK, MONTH})
+    @IntDef({DAY, WEEK, MONTH, ALL})
     public @interface DataType {
         int DAY = 0;
         int WEEK = 1;
         int MONTH = 2;
+        int ALL = 3;
     }
 
     private PMStepCount(Context context) {
@@ -79,12 +81,23 @@ public class PMStepCount {
      * @param entity
      * @return the row ID of the newly inserted row OR <code>-1</code> when insert failed
      */
-    public synchronized long insertOrIncrease(@NonNull PMStepCountEntity entity) {
+    public long insertOrIncrease(@NonNull PMStepCountEntity entity) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues values = convertEntityToContentValues(queryByUpdateTimeInMillWithin20Min(db, entity));
         long l = db.insertWithOnConflict(StepCountEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
         return l;
+    }
+
+    public void insertOrReplaceWithBatchData(List<PMStepCountEntity> entityList) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.beginTransaction();
+        for (PMStepCountEntity entity : entityList) {
+            db.insertWithOnConflict(StepCountEntry.TABLE_NAME, null, convertEntityToContentValues(queryByUpdateTimeInMillWithin20Min(db, entity)), SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        db.close();
     }
 
     @NonNull
@@ -108,8 +121,6 @@ public class PMStepCount {
      * @param stepCountEntity
      */
     private PMStepCountEntity queryByUpdateTimeInMillWithin20Min(SQLiteDatabase db, @NonNull PMStepCountEntity stepCountEntity) {
-
-
         String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " between ? and ?";
         String[] selectionArgs = new String[]{String.valueOf(stepCountEntity.getUpdateTimeInMill() - INTERVAL_IN_MILL), String.valueOf(stepCountEntity.getUpdateTimeInMill())};
 
@@ -127,6 +138,23 @@ public class PMStepCount {
         return stepCountEntity;
     }
 
+    /**
+     * 查询所有数据
+     * @return
+     */
+    public List<PMStepCountEntity> queryAll() {
+        return queryAllBetweenTimes(0, 0, ALL);
+    }
+
+    /**
+     * 根据{@link DataType}查询一段时间内的数据
+     *
+     * @param startTimeInMill
+     * @param endTimeInMill
+     * @param dataType
+     * @return
+     * @throws IllegalArgumentException
+     */
     @Nullable
     public List<PMStepCountEntity> queryAllBetweenTimes(long startTimeInMill, long endTimeInMill, @DataType int dataType) throws IllegalArgumentException {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
@@ -135,17 +163,23 @@ public class PMStepCount {
         String groupBy = null;
         String[] projection = mProjectionDay;
         switch (dataType) {
-            case DataType.DAY:
+            case DAY:
                 projection = mProjectionDay;
                 groupBy = null;
                 break;
-            case DataType.WEEK:
+            case WEEK:
                 projection = mProjectionWeekAndMonth;
                 groupBy = StepCountEntry.COLUMN_NAME_DAY;
                 break;
-            case DataType.MONTH:
+            case MONTH:
                 projection = mProjectionWeekAndMonth;
                 groupBy = StepCountEntry.COLUMN_NAME_DAY;
+                break;
+            case ALL:
+                selection = null;
+                selectionArgs = null;
+                projection = mProjectionDay;
+                groupBy = null;
                 break;
         }
         Cursor cursor = db.query(StepCountEntry.TABLE_NAME, projection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " ASC");

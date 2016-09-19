@@ -70,9 +70,8 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
         super.onViewCreated(view, savedInstanceState);
         mBarChart = (PMDailyBarChart) view.findViewById(R.id.barChart);
         mRingChart = (PMDailyRingChart) view.findViewById(R.id.walkChart);
-
-        Calendar instance = Calendar.getInstance();
-        getPresenter().getDatas(DateUtil.getBeginTimeOfDayInMill(instance),DateUtil.getEndTimeOfDayInMill(instance), PMStepCount.DataType.DAY);
+        long timeMillis = System.currentTimeMillis();
+        getPresenter().getDatas(DateUtil.getBeginTimeOfDayInMill(timeMillis),DateUtil.getEndTimeOfDayInMill(timeMillis), PMStepCount.DataType.DAY);
     }
 
     @Override

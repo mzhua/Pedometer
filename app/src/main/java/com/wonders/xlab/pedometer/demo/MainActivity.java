@@ -10,9 +10,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.wonders.xlab.pedometer.XPedometer;
 import com.wonders.xlab.pedometer.service.StepCounterService;
-import com.wonders.xlab.pedometer.ui.HomeActivity;
 import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,8 +23,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        TextView stepCounts = (TextView) findViewById(R.id.tvStepCounts);
-        stepCounts.setText(String.format("当前步数:%d", PreferenceManager.getDefaultSharedPreferences(this).getInt("steps", 0)));
         mPMDailyRingChart = (PMDailyRingChart) findViewById(R.id.walkChart);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -32,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                XPedometer.getInstance().start(MainActivity.this);
             }
         });
 
@@ -62,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void goToPedometer(View view) {
-        startActivity(new Intent(MainActivity.this, HomeActivity.class));
+        Toast.makeText(this, "XPedometer.getInstance().getAllLocalRecords().size():" + XPedometer.getInstance().getAllLocalRecords(this).size(), Toast.LENGTH_SHORT).show();
+
     }
 }
