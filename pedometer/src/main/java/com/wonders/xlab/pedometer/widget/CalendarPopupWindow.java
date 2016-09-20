@@ -73,6 +73,7 @@ public class CalendarPopupWindow extends RelativePopupWindow {
     public void setupCalendarView(TitleFormatter titleFormatter, CalendarMode calendarMode) {
         mCalendarView.setTitleFormatter(titleFormatter);
         mStateBuilder.setCalendarDisplayMode(calendarMode)
+                .setFirstDayOfWeek(Calendar.MONDAY)
                 .setMaximumDate(Calendar.getInstance()).commit();
     }
 

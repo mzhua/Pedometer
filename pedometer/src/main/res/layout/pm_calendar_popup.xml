@@ -16,5 +16,5 @@
         app:mcv_calendarMode="month"
         app:mcv_showOtherDates="all"
         app:mcv_selectionColor="@color/pmAppBlue"
-        app:mcv_weekDayLabels="@array/pm_week"/>
+        app:mcv_weekDayLabels="@array/pm_week_sunday"/>
 </android.support.v4.widget.NestedScrollView>
