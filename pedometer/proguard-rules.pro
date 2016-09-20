@@ -18,3 +18,4 @@
 
 -keep class com.wonders.xlab.pedometer.data.PMStepCountEntity {*;}
 -keep class com.wonders.xlab.pedometer.XPedometer {*;}
+-keep class com.wonders.xlab.pedometer.service.StepCounterService {*;}

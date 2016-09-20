@@ -31,6 +31,16 @@ minSdkVersion 15
 	```
 	XPedometer.getInstance().start();
 	```
+* 启动计步服务（并且确保开机启动，不被系统kill进程）
+
+	```
+	startService(new Intent(this, StepCounterService.class));
+	```
+* 每次步数都会通过`BroadCast`广播，如果需要接收，则注册监听如下`action`即可
+
+	```
+	IntentFilter intentFilter = new IntentFilter(getPackageName() + ".pm.step.broadcast");
+	```
 
 ---
 
