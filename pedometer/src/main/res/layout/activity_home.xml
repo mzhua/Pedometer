@@ -17,5 +17,14 @@
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/xtbl"/>
+        android:layout_below="@+id/xtbl"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingBottom="36dp"/>
+
+    <com.wonders.xlab.pedometer.widget.CircleIndicator
+        android:id="@+id/indicator"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_alignParentBottom="true"/>
 </RelativeLayout>

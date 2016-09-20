@@ -21,6 +21,7 @@ import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
 import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.util.FileUtil;
+import com.wonders.xlab.pedometer.widget.CircleIndicator;
 import com.wonders.xlab.pedometer.widget.XToolBarLayout;
 
 import java.io.File;
@@ -35,6 +36,7 @@ public class PMHomeActivity extends BaseActivity {
 
     private XToolBarLayout mToolBarLayout;
     private ViewPager mViewPager;
+    private CircleIndicator mCircleIndicator;
 
     private StepBroadcastReceiver mStepBroadcastReceiver;
     private PMDailyFragment mDailyFragment;
@@ -52,6 +54,7 @@ public class PMHomeActivity extends BaseActivity {
 
         mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
+        mCircleIndicator = (CircleIndicator) findViewById(R.id.indicator);
         mViewPager.setOffscreenPageLimit(3);
 
         setupActionBar(mToolBarLayout.getToolbar());
@@ -106,6 +109,8 @@ public class PMHomeActivity extends BaseActivity {
                 return 3;
             }
         });
+        mCircleIndicator.setViewPager(mViewPager);
+
         mViewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {

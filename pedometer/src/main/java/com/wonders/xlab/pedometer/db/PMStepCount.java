@@ -103,7 +103,6 @@ public class PMStepCount {
         db.close();
     }
 
-    @NonNull
     private ContentValues convertEntityToContentValues(@NonNull PMStepCountEntity entity) {
         mCalendar.setTimeInMillis(entity.getUpdateTimeInMill());
 
@@ -143,6 +142,7 @@ public class PMStepCount {
 
     /**
      * 查询所有数据
+     *
      * @return
      */
     public List<PMStepCountEntity> queryAll() {

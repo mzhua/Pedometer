@@ -24,6 +24,8 @@ public class StepCounterService extends Service {
 
     private Intent mBroadcastIntent;
 
+    private long mLastRecordTimeInMill = 0;
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO Auto-generated method stub
@@ -79,12 +81,18 @@ public class StepCounterService extends Service {
         }
     }
 
-
     /**
      * 步数加一
+     * 条件是,两次检测到的时间间隔至少为100ms
      */
-    private void increaseStepCountByOne() {
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(System.currentTimeMillis(), 1));
+    private synchronized void increaseStepCountByOne() {
+        long updateTimeInMill = System.currentTimeMillis();
+        if (updateTimeInMill - mLastRecordTimeInMill > 100) {
+            mLastRecordTimeInMill = updateTimeInMill;
+        } else {
+            return;
+        }
+        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(updateTimeInMill, 1));
         sendBroadcast(mBroadcastIntent);
     }
 
