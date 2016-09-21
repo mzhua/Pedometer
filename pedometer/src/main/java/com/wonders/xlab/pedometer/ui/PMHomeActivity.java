@@ -16,6 +16,7 @@ import android.view.View;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.XPedometer;
+import com.wonders.xlab.pedometer.XPedometerEventConstant;
 import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
@@ -73,7 +74,7 @@ public class PMHomeActivity extends BaseActivity {
         mStepBroadcastReceiver = new StepBroadcastReceiver();
         registerReceiver(mStepBroadcastReceiver, intentFilter);
 
-        sendEventBroadcast(XPedometer.EVENT_PAGE_CREATE_HOME, getResources().getString(R.string.pm_app_name));
+        sendEventBroadcast(XPedometerEventConstant.EVENT_PAGE_CREATE_HOME, getResources().getString(R.string.pm_app_name));
     }
 
     class StepBroadcastReceiver extends BroadcastReceiver {
@@ -179,7 +180,7 @@ public class PMHomeActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_share) {
             shareViewPager();
-            sendEventBroadcast(XPedometer.EVENT_CLICK_MENU_SHARE, getResources().getString(R.string.menu_share));
+            sendEventBroadcast(XPedometerEventConstant.EVENT_CLICK_MENU_SHARE, getResources().getString(R.string.menu_share));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -230,14 +231,14 @@ public class PMHomeActivity extends BaseActivity {
             unregisterReceiver(mStepBroadcastReceiver);
             mStepBroadcastReceiver = null;
         }
-        sendEventBroadcast(XPedometer.EVENT_PAGE_DESTROY_HOME, getResources().getString(R.string.pm_app_name));
+        sendEventBroadcast(XPedometerEventConstant.EVENT_PAGE_DESTROY_HOME, getResources().getString(R.string.pm_app_name));
     }
 
-    private void sendEventBroadcast(int type, String name) {
+    private void sendEventBroadcast(String event, String name) {
         Intent intent = new Intent(getPackageName() + ".pm.event");
-        intent.putExtra("type", type);
-        intent.putExtra("name", name);
-        intent.putExtra("timeInMill", System.currentTimeMillis());
+        intent.putExtra(XPedometerEventConstant.EXTRA_KEY_EVENT, event);
+        intent.putExtra(XPedometerEventConstant.EXTRA_KEY_NAME, name);
+        intent.putExtra(XPedometerEventConstant.EXTRA_KEY_TIME_IN_MILL, System.currentTimeMillis());
         sendBroadcast(intent);
     }
 }

@@ -18,10 +18,6 @@ import java.util.List;
 public class XPedometer {
     private static XPedometer instance = null;
 
-    public static final int EVENT_PAGE_CREATE_HOME = 0;
-    public static final int EVENT_PAGE_DESTROY_HOME = 1;
-    public static final int EVENT_CLICK_MENU_SHARE = 3;
-
     private XPedometer() {
     }
 

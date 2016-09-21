@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.wonders.xlab.pedometer.XPedometer;
+import com.wonders.xlab.pedometer.XPedometerEvent;
 import com.wonders.xlab.pedometer.service.StepCounterService;
 import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 
@@ -38,11 +39,11 @@ public class MainActivity extends AppCompatActivity {
 
         startService(new Intent(this, StepCounterService.class));
 
-        IntentFilter filter = new IntentFilter(getPackageName() + ".pm.event");
+        IntentFilter filter = new IntentFilter(XPedometerEvent.getInstance().getActionOfEventBroadcast(this));
         registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Toast.makeText(context, intent.getIntExtra("type", XPedometer.EVENT_PAGE_CREATE_HOME) + ":" + intent.getStringExtra("name"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, XPedometerEvent.getInstance().getEventDataBean(context, intent).getEvent() + ":" + XPedometerEvent.getInstance().getEventDataBean(context, intent).getName(), Toast.LENGTH_SHORT).show();
             }
         }, filter);
     }
