@@ -1,4 +1,4 @@
-def libVersion = '1.0.1'
+def libVersion = '1.0.2'
 
 group = 'com.wonders.xlab.pedometer'
 version = libVersion
