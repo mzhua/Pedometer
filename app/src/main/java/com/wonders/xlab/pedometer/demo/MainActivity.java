@@ -1,15 +1,16 @@
 package com.wonders.xlab.pedometer.demo;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wonders.xlab.pedometer.XPedometer;
@@ -36,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         startService(new Intent(this, StepCounterService.class));
+
+        IntentFilter filter = new IntentFilter(getPackageName() + ".pm.event");
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(context, intent.getIntExtra("type", XPedometer.EVENT_PAGE_CREATE_HOME) + ":" + intent.getStringExtra("name"), Toast.LENGTH_SHORT).show();
+            }
+        }, filter);
     }
 
     @Override

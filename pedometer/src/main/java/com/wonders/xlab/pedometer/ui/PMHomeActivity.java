@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.wonders.xlab.pedometer.R;
+import com.wonders.xlab.pedometer.XPedometer;
 import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
 import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
@@ -71,6 +72,8 @@ public class PMHomeActivity extends BaseActivity {
         IntentFilter intentFilter = new IntentFilter(getPackageName() + ".pm.step.broadcast");
         mStepBroadcastReceiver = new StepBroadcastReceiver();
         registerReceiver(mStepBroadcastReceiver, intentFilter);
+
+        sendEventBroadcast(XPedometer.EVENT_PAGE_CREATE_HOME, getResources().getString(R.string.pm_app_name));
     }
 
     class StepBroadcastReceiver extends BroadcastReceiver {
@@ -78,9 +81,9 @@ public class PMHomeActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             long timeMillis = System.currentTimeMillis();
-            mDailyFragment.refreshView(DateUtil.getBeginTimeOfDayInMill(timeMillis),DateUtil.getEndTimeOfDayInMill(timeMillis));
-            mWeeklyFragment.refreshView(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis));
-            mMonthlyFragment.refreshView(DateUtil.getBeginTimeOfMonthInMill(timeMillis),DateUtil.getEndTimeOfMonthInMill(timeMillis));
+            mDailyFragment.refreshView(DateUtil.getBeginTimeOfDayInMill(timeMillis), DateUtil.getEndTimeOfDayInMill(timeMillis));
+            mWeeklyFragment.refreshView(DateUtil.getBeginTimeOfWeekInMill(timeMillis), DateUtil.getEndTimeOfWeekInMill(timeMillis));
+            mMonthlyFragment.refreshView(DateUtil.getBeginTimeOfMonthInMill(timeMillis), DateUtil.getEndTimeOfMonthInMill(timeMillis));
         }
     }
 
@@ -162,6 +165,7 @@ public class PMHomeActivity extends BaseActivity {
 
     /**
      * 菜单图标预处理,与toolbar颜色区分
+     *
      * @param menu
      * @return
      */
@@ -175,6 +179,7 @@ public class PMHomeActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_share) {
             shareViewPager();
+            sendEventBroadcast(XPedometer.EVENT_CLICK_MENU_SHARE, getResources().getString(R.string.menu_share));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -225,5 +230,14 @@ public class PMHomeActivity extends BaseActivity {
             unregisterReceiver(mStepBroadcastReceiver);
             mStepBroadcastReceiver = null;
         }
+        sendEventBroadcast(XPedometer.EVENT_PAGE_DESTROY_HOME, getResources().getString(R.string.pm_app_name));
+    }
+
+    private void sendEventBroadcast(int type, String name) {
+        Intent intent = new Intent(getPackageName() + ".pm.event");
+        intent.putExtra("type", type);
+        intent.putExtra("name", name);
+        intent.putExtra("timeInMill", System.currentTimeMillis());
+        sendBroadcast(intent);
     }
 }

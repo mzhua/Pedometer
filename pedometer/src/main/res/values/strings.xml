@@ -5,6 +5,7 @@
     <string name="initial_hint_zero">0</string>
     <string name="tv_avg_steps">平均步数</string>
     <string name="tv_sum_steps">总步数</string>
+    <string name="menu_share">分享</string>
     <string-array name="pm_week">
         <item>周一</item>
         <item>周二</item>
