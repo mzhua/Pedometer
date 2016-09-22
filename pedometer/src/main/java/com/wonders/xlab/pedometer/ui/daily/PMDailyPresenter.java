@@ -12,7 +12,7 @@ import com.wonders.xlab.pedometer.db.PMStepCount;
 import java.util.Calendar;
 import java.util.List;
 
-public class PMDailyPresenter extends BasePresenter implements PMStepCountContract.Presenter {
+public class PMDailyPresenter extends BasePresenter implements PMDailyContract.Presenter {
     private PMDailyContract.View mView;
     private PMStepCountContract.Model mModel;
 
@@ -22,8 +22,8 @@ public class PMDailyPresenter extends BasePresenter implements PMStepCountContra
     }
 
     @Override
-    public void getDatas(long startTimeInMill, final long endTimeInMill, @PMStepCount.DataType int dataType) {
-        mModel.getDataList(startTimeInMill, endTimeInMill, dataType, new BaseContract.Model.Callback<List<PMStepCountEntity>>() {
+    public void getDatas(long startTimeInMill, final long endTimeInMill) {
+        mModel.getDataList(startTimeInMill, endTimeInMill, PMStepCount.DataType.DAY, new BaseContract.Model.Callback<List<PMStepCountEntity>>() {
             @Override
             public void onSuccess(List<PMStepCountEntity> pmStepCountEntities) {
                 int totalStepCounts = 0;
@@ -31,10 +31,8 @@ public class PMDailyPresenter extends BasePresenter implements PMStepCountContra
                 int distanceInKm = 0;
 
                 if (pmStepCountEntities != null) {
-                    Calendar calendar = Calendar.getInstance();
                     for (PMStepCountEntity entity : pmStepCountEntities) {
                         totalStepCounts += entity.getStepCounts();
-                        calendar.setTimeInMillis(entity.getUpdateTimeInMill());
                     }
                 }
 

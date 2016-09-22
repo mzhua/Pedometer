@@ -44,7 +44,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(startTimeInMill,endTimeInMill, PMStepCount.DataType.DAY);
+            getPresenter().getDatas(startTimeInMill,endTimeInMill);
         }
     }
 
@@ -71,7 +71,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
         mBarChart = (PMDailyBarChart) view.findViewById(R.id.barChart);
         mRingChart = (PMDailyRingChart) view.findViewById(R.id.walkChart);
         long timeMillis = System.currentTimeMillis();
-        getPresenter().getDatas(DateUtil.getBeginTimeOfDayInMill(timeMillis),DateUtil.getEndTimeOfDayInMill(timeMillis), PMStepCount.DataType.DAY);
+        getPresenter().getDatas(DateUtil.getBeginTimeOfDayInMill(timeMillis),DateUtil.getEndTimeOfDayInMill(timeMillis));
     }
 
     @Override
