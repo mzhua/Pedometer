@@ -9,8 +9,8 @@ import android.widget.TextView;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
-import com.wonders.xlab.pedometer.data.PMStepCountModel;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.data.PMStepRepository;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.widget.PMMonthLineAreaBean;
 import com.wonders.xlab.pedometer.widget.PMMonthLineAreaChart;
@@ -36,7 +36,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     @Override
     public PMMonthlyPresenter getPresenter() {
         if (null == mPresenter) {
-            mPresenter = new PMMonthlyPresenter(this, new PMStepCountModel(PMStepCount.getInstance(getActivity())));
+            mPresenter = new PMMonthlyPresenter(this, new PMStepRepository(PMStepLocalDataSource.get(getActivity())));
         }
         return mPresenter;
     }
@@ -44,7 +44,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepCount.DataType.MONTH);
+            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepLocalDataSource.DataType.MONTH);
         }
     }
 
@@ -72,7 +72,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
         long timeInMill = System.currentTimeMillis();
-        getPresenter().getDatas(DateUtil.getBeginTimeOfMonthInMill(timeInMill), DateUtil.getEndTimeOfMonthInMill(timeInMill), PMStepCount.DataType.MONTH);
+        getPresenter().getDatas(DateUtil.getBeginTimeOfMonthInMill(timeInMill), DateUtil.getEndTimeOfMonthInMill(timeInMill), PMStepLocalDataSource.DataType.MONTH);
     }
 
     @Override

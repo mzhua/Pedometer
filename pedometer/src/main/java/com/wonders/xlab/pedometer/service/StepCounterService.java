@@ -9,8 +9,8 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
 
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.data.PMStepEntity;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 
 /**
  * Created by hua on 16/9/9.
@@ -92,7 +92,7 @@ public class StepCounterService extends Service {
         } else {
             return;
         }
-        PMStepCount.getInstance(this).insertOrIncrease(new PMStepCountEntity(updateTimeInMill, 1));
+        PMStepLocalDataSource.get(this).insertOrIncrease(new PMStepEntity(updateTimeInMill));
         sendBroadcast(mBroadcastIntent);
     }
 

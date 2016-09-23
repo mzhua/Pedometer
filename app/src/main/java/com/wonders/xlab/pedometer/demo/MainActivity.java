@@ -21,6 +21,8 @@ import com.wonders.xlab.pedometer.widget.PMDailyRingChart;
 public class MainActivity extends AppCompatActivity {
     PMDailyRingChart mPMDailyRingChart;
 
+    private BroadcastReceiver mEventBroadcastReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,12 +42,13 @@ public class MainActivity extends AppCompatActivity {
         startService(new Intent(this, StepCounterService.class));
 
         IntentFilter filter = new IntentFilter(XPedometerEvent.getInstance().getActionOfEventBroadcast(this));
-        registerReceiver(new BroadcastReceiver() {
+        mEventBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Toast.makeText(context, XPedometerEvent.getInstance().getEventDataBean(context, intent).getEvent() + ":" + XPedometerEvent.getInstance().getEventDataBean(context, intent).getName(), Toast.LENGTH_SHORT).show();
             }
-        }, filter);
+        };
+        registerReceiver(mEventBroadcastReceiver, filter);
     }
 
     @Override
@@ -73,5 +76,11 @@ public class MainActivity extends AppCompatActivity {
     public void goToPedometer(View view) {
         Toast.makeText(this, "XPedometer.getInstance().getAllLocalRecords().size():" + XPedometer.getInstance().getAllLocalRecords(this).size(), Toast.LENGTH_SHORT).show();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mEventBroadcastReceiver);
     }
 }

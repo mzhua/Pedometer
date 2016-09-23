@@ -9,8 +9,8 @@ import android.widget.TextView;
 
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.base.MVPFragment;
-import com.wonders.xlab.pedometer.data.PMStepCountModel;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.data.PMStepRepository;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChart;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
@@ -26,7 +26,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     @Override
     public PMWeeklyPresenter getPresenter() {
         if (null == mPresenter) {
-            mPresenter = new PMWeeklyPresenter(this, new PMStepCountModel(PMStepCount.getInstance(getActivity())));
+            mPresenter = new PMWeeklyPresenter(this, new PMStepRepository(PMStepLocalDataSource.get(getActivity())));
         }
         return mPresenter;
     }
@@ -34,7 +34,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepCount.DataType.WEEK);
+            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepLocalDataSource.DataType.WEEK);
         }
     }
 
@@ -71,7 +71,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
         long timeMillis = System.currentTimeMillis();
-        getPresenter().getDatas(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis), PMStepCount.DataType.WEEK);
+        getPresenter().getDatas(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis), PMStepLocalDataSource.DataType.WEEK);
     }
 
     @Override

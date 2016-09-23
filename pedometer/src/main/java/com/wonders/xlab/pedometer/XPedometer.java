@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.data.PMStepEntity;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 import com.wonders.xlab.pedometer.ui.PMHomeActivity;
 
 import java.util.List;
@@ -47,11 +47,11 @@ public class XPedometer {
         fragment.startActivity(getIntent(fragment.getContext()));
     }
 
-    public void updateLocalRecords(Context context, List<PMStepCountEntity> entityList) {
-        PMStepCount.getInstance(context).insertOrReplaceWithBatchData(entityList);
+    public void updateLocalRecords(Context context, List<PMStepEntity> entityList) {
+        PMStepLocalDataSource.get(context).insertOrReplaceWithBatchData(entityList);
     }
 
-    public List<PMStepCountEntity> getAllLocalRecords(Context context) {
-        return PMStepCount.getInstance(context).queryAll();
+    public List<PMStepEntity> getAllLocalRecords(Context context) {
+        return PMStepLocalDataSource.get(context).queryAll();
     }
 }

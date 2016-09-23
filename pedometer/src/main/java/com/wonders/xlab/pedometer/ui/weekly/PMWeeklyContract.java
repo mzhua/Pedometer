@@ -1,10 +1,8 @@
 package com.wonders.xlab.pedometer.ui.weekly;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

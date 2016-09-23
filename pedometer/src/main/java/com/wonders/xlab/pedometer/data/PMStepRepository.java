@@ -1,7 +1,7 @@
 package com.wonders.xlab.pedometer.data;
 
 import com.wonders.xlab.pedometer.base.BaseModel;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 
 import java.util.List;
 
@@ -9,16 +9,15 @@ import java.util.List;
  * Created by hua on 16/9/12.
  */
 
-public class PMStepRepository extends BaseModel implements PMStepCountContract.Model {
-    private PMStepCount mStepCount;
+public class PMStepRepository extends BaseModel implements PMStepContract.Model {
+    private PMStepLocalDataSource mStepCount;
 
-    public PMStepRepository(PMStepCount stepCount) {
-        mStepCount = stepCount;
+    public PMStepRepository(PMStepLocalDataSource localDataSource) {
+        mStepCount = localDataSource;
     }
 
     @Override
-    public void getDataList(long startTimeInMill, long endTimeInMill, @PMStepCount.DataType int dataType, Callback<List<PMStepCountEntity>> callback) {
-        List<PMStepCountEntity> entityList = mStepCount.queryAllBetweenTimes(startTimeInMill, endTimeInMill, dataType);
-        callback.onSuccess(entityList);
+    public void getDataList(long startTimeInMill, long endTimeInMill, @PMStepLocalDataSource.DataType int dataType, Callback<List<PMStepEntity>> callback) {
+        callback.onSuccess(mStepCount.queryAllBetweenTimes(startTimeInMill, endTimeInMill, dataType));
     }
 }

@@ -1,9 +1,10 @@
 package com.wonders.xlab.pedometer.test.daily;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
-import com.wonders.xlab.pedometer.data.PMStepCountContract;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.base.DefaultException;
+import com.wonders.xlab.pedometer.data.PMStepContract;
+import com.wonders.xlab.pedometer.data.PMStepEntity;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyContract;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyPresenter;
 
@@ -11,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -37,8 +40,10 @@ public class TestPMDailyPresenter {
     PMDailyContract.View mView;
 
     @Mock
-    PMStepCountContract.Model mModel;
+    PMStepContract.Model mModel;
 
+    @Captor
+    ArgumentCaptor<BaseContract.Model.Callback<List<PMStepEntity>>> mCallback;
     @Before
     public void setup() {
         initMocks(this);
@@ -50,28 +55,59 @@ public class TestPMDailyPresenter {
         int[] stepsPerRecord = new int[]{200, 300, 123};
         int sumStepsOfToday = 0;
 
-        final List<PMStepCountEntity> entityList = new ArrayList<>();
+        final List<PMStepEntity> entityList = new ArrayList<>();
 
         for (int stepsOfPerRecord : stepsPerRecord) {
             sumStepsOfToday += stepsOfPerRecord;
 
-            PMStepCountEntity entity = new PMStepCountEntity(System.currentTimeMillis(), stepsOfPerRecord);
+            PMStepEntity entity = new PMStepEntity(System.currentTimeMillis());
             entityList.add(entity);
         }
 
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                BaseContract.Model.Callback<List<PMStepCountEntity>> callback = invocation.getArgument(3);
+                BaseContract.Model.Callback<List<PMStepEntity>> callback = invocation.getArgument(3);
 
                 callback.onSuccess(entityList);
                 return 200;
             }
-        }).when(mModel).getDataList(anyLong(), anyLong(), eq(PMStepCount.DataType.DAY), any(BaseContract.Model.Callback.class));
+        }).when(mModel).getDataList(anyLong(), anyLong(), eq(PMStepLocalDataSource.DataType.DAY), any(BaseContract.Model.Callback.class));
 
         mDailyPresenter.getDatas(0, 0);
 
         verify(mView).showDailyData(eq(sumStepsOfToday), eq(0), eq(0), eq(entityList));
     }
 
+    @Test
+    public void testGetDatasSuccessWithCaptor() {
+        int[] stepsPerRecord = new int[]{200, 300, 123};
+        int sumStepsOfToday = 0;
+        final List<PMStepEntity> entityList = new ArrayList<>();
+        for (int stepsOfPerRecord : stepsPerRecord) {
+            sumStepsOfToday += stepsOfPerRecord;
+
+            PMStepEntity entity = new PMStepEntity(System.currentTimeMillis());
+            entityList.add(entity);
+        }
+
+        //调用
+        mDailyPresenter.getDatas(0, 0);
+        //验证
+        verify(mModel).getDataList(anyLong(), anyLong(),eq(PMStepLocalDataSource.DataType.DAY),mCallback.capture());
+        //触发callback
+        mCallback.getValue().onSuccess(entityList);
+        //验证callback触发后回调View显示
+        verify(mView).showDailyData(eq(sumStepsOfToday), eq(0), eq(0), eq(entityList));
+    }
+
+    @Test
+    public void testGetDatasFail() {
+        String errorMsg = "get data failed";
+
+        mDailyPresenter.getDatas(0,0);
+        verify(mModel).getDataList(anyLong(),anyLong(),eq(PMStepLocalDataSource.DataType.DAY),mCallback.capture());
+        mCallback.getValue().onFail(new DefaultException(errorMsg));
+        verify(mView).showToastMessage(eq(errorMsg));
+    }
 }

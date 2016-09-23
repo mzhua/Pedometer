@@ -1,8 +1,7 @@
 package com.wonders.xlab.pedometer.ui.daily;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.data.PMStepEntity;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ import java.util.List;
 
 public interface PMDailyContract {
     interface View extends BaseContract.View {
-        void showDailyData(int totalStepCounts, int calorie, int distanceInKm, List<PMStepCountEntity> entityList);
+        void showDailyData(int totalStepCounts, int calorie, int distanceInKm, List<PMStepEntity> entityList);
     }
 
     interface Presenter extends BaseContract.Presenter {

@@ -16,7 +16,7 @@
 #   public *;
 #}
 
--keep class com.wonders.xlab.pedometer.data.PMStepCountEntity {*;}
+-keep class com.wonders.xlab.pedometer.data.PMStepEntity
 -keep class com.wonders.xlab.pedometer.XPedometer {*;}
 -keep class com.wonders.xlab.pedometer.XPedometerEvent {*;}
 -keep class com.wonders.xlab.pedometer.XPedometerEventDataBean {*;}

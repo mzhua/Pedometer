@@ -5,29 +5,29 @@ import android.support.annotation.NonNull;
 import com.wonders.xlab.pedometer.base.BaseContract;
 import com.wonders.xlab.pedometer.base.BasePresenter;
 import com.wonders.xlab.pedometer.base.DefaultException;
-import com.wonders.xlab.pedometer.data.PMStepCountContract;
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMStepCount;
+import com.wonders.xlab.pedometer.data.PMStepContract;
+import com.wonders.xlab.pedometer.data.PMStepEntity;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class PMWeeklyPresenter extends BasePresenter implements PMStepCountContract.Presenter {
+public class PMWeeklyPresenter extends BasePresenter implements PMStepContract.Presenter {
     private PMWeeklyContract.View mView;
-    private PMStepCountContract.Model mModel;
+    private PMStepContract.Model mModel;
 
-    public PMWeeklyPresenter(PMWeeklyContract.View view, PMStepCountContract.Model model) {
+    public PMWeeklyPresenter(PMWeeklyContract.View view, PMStepContract.Model model) {
         mView = view;
         mModel = model;
     }
 
     @Override
-    public void getDatas(long startTimeInMill, final long endTimeInMill, @PMStepCount.DataType int dataType) {
-        mModel.getDataList(startTimeInMill, endTimeInMill, dataType, new BaseContract.Model.Callback<List<PMStepCountEntity>>() {
+    public void getDatas(long startTimeInMill, final long endTimeInMill, @PMStepLocalDataSource.DataType int dataType) {
+        mModel.getDataList(startTimeInMill, endTimeInMill, dataType, new BaseContract.Model.Callback<List<PMStepEntity>>() {
             @Override
-            public void onSuccess(List<PMStepCountEntity> pmStepCountEntities) {
+            public void onSuccess(List<PMStepEntity> pmStepCountEntities) {
                 List<PMWeeklyBarChartBean> dataList = null;
                 int avgStep = 0;
                 int sumStep = 0;
@@ -37,7 +37,7 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepCountContr
 
                     //just in case, take the first seven records
                     for (int i = 0; i < Math.min(pmStepCountEntities.size(), 6); i++) {
-                        PMStepCountEntity entity = pmStepCountEntities.get(i);
+                        PMStepEntity entity = pmStepCountEntities.get(i);
                         int counts = entity.getStepCounts();
                         sumStep += counts;
                         calendar.setTimeInMillis(entity.getUpdateTimeInMill());

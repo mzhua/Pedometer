@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 
 import com.wonders.xlab.pedometer.data.PMStepEntity;
 import com.wonders.xlab.pedometer.localdata.PMContract.StepCountEntry;
@@ -29,11 +30,11 @@ import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataTyp
  */
 
 public class PMStepLocalDataSource {
-    private final int INTERVAL_MINUTES = 20;
+    private final static int INTERVAL_MINUTES = 20;
     /**
      * 保存记录时,在这个时间差范围内的记录合并为一条
      */
-    private final long INTERVAL_IN_MILL = INTERVAL_MINUTES * 60 * 1000;
+    public final static long INTERVAL_IN_MILL = INTERVAL_MINUTES * 60 * 1000;
 
     private PMDbHelper mDbHelper;
 
@@ -157,10 +158,9 @@ public class PMStepLocalDataSource {
      * @param endTimeInMill
      * @param dataType
      * @return
-     * @throws IllegalArgumentException
      */
     @Nullable
-    public List<PMStepEntity> queryAllBetweenTimes(long startTimeInMill, long endTimeInMill, @DataType int dataType) throws IllegalArgumentException {
+    public List<PMStepEntity> queryAllBetweenTimes(long startTimeInMill, long endTimeInMill, @DataType int dataType) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " between ? and ?";
         String[] selectionArgs = new String[]{String.valueOf(startTimeInMill), String.valueOf(endTimeInMill)};
@@ -193,7 +193,8 @@ public class PMStepLocalDataSource {
             entityList = new ArrayList<>();
             do {
                 PMStepEntity entity = new PMStepEntity(cursor.getLong(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL)),
-                        cursor.getInt(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_STEPS)));
+                        cursor.getInt(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_STEPS))
+                );
                 entityList.add(entity);
             } while (cursor.moveToNext());
         }
@@ -201,5 +202,12 @@ public class PMStepLocalDataSource {
         cursor.close();
         db.close();
         return entityList;
+    }
+
+    @VisibleForTesting
+    public void deleteAll() {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.delete(StepCountEntry.TABLE_NAME, null, null);
+        db.close();
     }
 }
