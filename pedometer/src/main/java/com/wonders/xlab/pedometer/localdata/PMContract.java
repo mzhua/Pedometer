@@ -1,4 +1,4 @@
-package com.wonders.xlab.pedometer.db;
+package com.wonders.xlab.pedometer.localdata;
 
 import android.provider.BaseColumns;
 

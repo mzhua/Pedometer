@@ -6,7 +6,7 @@ import org.junit.Test;
  * Created by hua on 16/9/22.
  */
 
-public class TestPMStepCountModel {
+public class TestPMStepRepository {
     @Test
     public void testGetDataList() {
 

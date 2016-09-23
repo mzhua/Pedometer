@@ -4,12 +4,12 @@ package com.wonders.xlab.pedometer.data;
  * Created by hua on 16/9/6.
  */
 
-public class PMStepCountEntity {
+public class PMStepEntity {
     private long updateTimeInMill;
     private long createTimeInMill;
     private int stepCounts;
 
-    public PMStepCountEntity(long updateTimeInMill, int stepCounts) {
+    public PMStepEntity(long updateTimeInMill, int stepCounts) {
         this.createTimeInMill = updateTimeInMill;
         this.updateTimeInMill = updateTimeInMill;
         this.stepCounts = stepCounts;

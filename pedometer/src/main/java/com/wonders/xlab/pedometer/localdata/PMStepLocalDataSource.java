@@ -1,4 +1,4 @@
-package com.wonders.xlab.pedometer.db;
+package com.wonders.xlab.pedometer.localdata;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,8 +8,8 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.wonders.xlab.pedometer.data.PMStepCountEntity;
-import com.wonders.xlab.pedometer.db.PMContract.StepCountEntry;
+import com.wonders.xlab.pedometer.data.PMStepEntity;
+import com.wonders.xlab.pedometer.localdata.PMContract.StepCountEntry;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,17 +17,18 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.ALL;
-import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.DAY;
-import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.MONTH;
-import static com.wonders.xlab.pedometer.db.PMStepCount.DataType.WEEK;
+import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataType.ALL;
+import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataType.DAY;
+import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataType.MONTH;
+import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataType.WEEK;
 
 
 /**
  * Created by hua on 16/9/12.
+ * 本地sqlite数据源
  */
 
-public class PMStepCount {
+public class PMStepLocalDataSource {
     private final int INTERVAL_MINUTES = 20;
     /**
      * 保存记录时,在这个时间差范围内的记录合并为一条
@@ -38,7 +39,7 @@ public class PMStepCount {
 
     private static Calendar mCalendar;
 
-    private static PMStepCount instance = null;
+    private static PMStepLocalDataSource instance = null;
 
     private String[] mProjectionDay = {
             StepCountEntry.COLUMN_NAME_STEPS,
@@ -60,15 +61,15 @@ public class PMStepCount {
         int ALL = 3;
     }
 
-    private PMStepCount(Context context) {
+    private PMStepLocalDataSource(Context context) {
         mDbHelper = new PMDbHelper(context);
         mCalendar = Calendar.getInstance();
     }
 
-    public static PMStepCount getInstance(Context context) {
-        synchronized (PMStepCount.class) {
+    public static PMStepLocalDataSource get(Context context) {
+        synchronized (PMStepLocalDataSource.class) {
             if (instance == null) {
-                instance = new PMStepCount(context);
+                instance = new PMStepLocalDataSource(context);
             }
         }
         return instance;
@@ -81,7 +82,7 @@ public class PMStepCount {
      * @param entity
      * @return the row ID of the newly inserted row OR <code>-1</code> when insert failed
      */
-    public long insertOrIncrease(@NonNull PMStepCountEntity entity) {
+    public long insertOrIncrease(@NonNull PMStepEntity entity) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues values = convertEntityToContentValues(queryByUpdateTimeInMillWithin20Min(db, entity));
         long l = db.insertWithOnConflict(StepCountEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
@@ -89,13 +90,13 @@ public class PMStepCount {
         return l;
     }
 
-    public void insertOrReplaceWithBatchData(List<PMStepCountEntity> entityList) {
+    public void insertOrReplaceWithBatchData(List<PMStepEntity> entityList) {
         if (entityList == null || entityList.size() == 0) {
             return;
         }
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.beginTransaction();
-        for (PMStepCountEntity entity : entityList) {
+        for (PMStepEntity entity : entityList) {
             db.insertWithOnConflict(StepCountEntry.TABLE_NAME, null, convertEntityToContentValues(queryByUpdateTimeInMillWithin20Min(db, entity)), SQLiteDatabase.CONFLICT_REPLACE);
         }
         db.setTransactionSuccessful();
@@ -103,7 +104,7 @@ public class PMStepCount {
         db.close();
     }
 
-    private ContentValues convertEntityToContentValues(@NonNull PMStepCountEntity entity) {
+    private ContentValues convertEntityToContentValues(@NonNull PMStepEntity entity) {
         mCalendar.setTimeInMillis(entity.getUpdateTimeInMill());
 
         ContentValues values = new ContentValues();
@@ -122,7 +123,7 @@ public class PMStepCount {
      *
      * @param stepCountEntity
      */
-    private PMStepCountEntity queryByUpdateTimeInMillWithin20Min(SQLiteDatabase db, @NonNull PMStepCountEntity stepCountEntity) {
+    private PMStepEntity queryByUpdateTimeInMillWithin20Min(SQLiteDatabase db, @NonNull PMStepEntity stepCountEntity) {
         String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " between ? and ?";
         String[] selectionArgs = new String[]{String.valueOf(stepCountEntity.getUpdateTimeInMill() - INTERVAL_IN_MILL), String.valueOf(stepCountEntity.getUpdateTimeInMill())};
 
@@ -145,7 +146,7 @@ public class PMStepCount {
      *
      * @return
      */
-    public List<PMStepCountEntity> queryAll() {
+    public List<PMStepEntity> queryAll() {
         return queryAllBetweenTimes(0, 0, ALL);
     }
 
@@ -159,7 +160,7 @@ public class PMStepCount {
      * @throws IllegalArgumentException
      */
     @Nullable
-    public List<PMStepCountEntity> queryAllBetweenTimes(long startTimeInMill, long endTimeInMill, @DataType int dataType) throws IllegalArgumentException {
+    public List<PMStepEntity> queryAllBetweenTimes(long startTimeInMill, long endTimeInMill, @DataType int dataType) throws IllegalArgumentException {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         String selection = StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " between ? and ?";
         String[] selectionArgs = new String[]{String.valueOf(startTimeInMill), String.valueOf(endTimeInMill)};
@@ -187,11 +188,11 @@ public class PMStepCount {
         }
         Cursor cursor = db.query(StepCountEntry.TABLE_NAME, projection, selection, selectionArgs, groupBy, null, StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL + " ASC");
 
-        List<PMStepCountEntity> entityList = null;
+        List<PMStepEntity> entityList = null;
         if (cursor.moveToFirst()) {
             entityList = new ArrayList<>();
             do {
-                PMStepCountEntity entity = new PMStepCountEntity(cursor.getLong(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL)),
+                PMStepEntity entity = new PMStepEntity(cursor.getLong(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_UPDATE_TIME_IN_MILL)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(StepCountEntry.COLUMN_NAME_STEPS)));
                 entityList.add(entity);
             } while (cursor.moveToNext());

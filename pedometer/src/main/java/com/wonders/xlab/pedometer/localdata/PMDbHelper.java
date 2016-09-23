@@ -1,10 +1,10 @@
-package com.wonders.xlab.pedometer.db;
+package com.wonders.xlab.pedometer.localdata;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.wonders.xlab.pedometer.db.PMContract.StepCountEntry;
+import com.wonders.xlab.pedometer.localdata.PMContract.StepCountEntry;
 
 /**
  * Created by hua on 16/9/12.

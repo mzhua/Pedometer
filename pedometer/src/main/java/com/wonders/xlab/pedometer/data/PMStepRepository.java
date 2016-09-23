@@ -9,10 +9,10 @@ import java.util.List;
  * Created by hua on 16/9/12.
  */
 
-public class PMStepCountModel extends BaseModel implements PMStepCountContract.Model {
+public class PMStepRepository extends BaseModel implements PMStepCountContract.Model {
     private PMStepCount mStepCount;
 
-    public PMStepCountModel(PMStepCount stepCount) {
+    public PMStepRepository(PMStepCount stepCount) {
         mStepCount = stepCount;
     }
 
