@@ -18,7 +18,6 @@ import java.util.Date;
 public class FileUtil {
 
     private static final String ERROR_CREATE_FILE_FAILED = "保存文件失败,请确认是否授权读写存储卡的权限以及存储卡是否正确挂载";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     public static boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();

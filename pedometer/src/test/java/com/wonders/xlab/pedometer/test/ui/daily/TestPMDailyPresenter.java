@@ -1,4 +1,4 @@
-package com.wonders.xlab.pedometer.test.daily;
+package com.wonders.xlab.pedometer.test.ui.daily;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
 import com.wonders.xlab.pedometer.base.DefaultException;

@@ -10,14 +10,14 @@ import java.util.List;
  */
 
 public class PMStepRepository extends BaseModel implements PMStepContract.Model {
-    private PMStepLocalDataSource mStepCount;
+    private PMStepLocalDataSource mLocalDataSource;
 
     public PMStepRepository(PMStepLocalDataSource localDataSource) {
-        mStepCount = localDataSource;
+        mLocalDataSource = localDataSource;
     }
 
     @Override
     public void getDataList(long startTimeInMill, long endTimeInMill, @PMStepLocalDataSource.DataType int dataType, Callback<List<PMStepEntity>> callback) {
-        callback.onSuccess(mStepCount.queryAllBetweenTimes(startTimeInMill, endTimeInMill, dataType));
+        callback.onSuccess(mLocalDataSource.queryAllBetweenTimes(startTimeInMill, endTimeInMill, dataType));
     }
 }

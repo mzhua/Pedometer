@@ -9,13 +9,14 @@ import android.support.annotation.NonNull;
 
 public class StringUtil {
     @NonNull
-    public static String autoPrefixStr(@NonNull String timeStr,@NonNull String prefix, @IntRange(from = 1) int minLength) {
+    public static String autoPrefixStr(@NonNull String sourceStr, char prefix, @IntRange(from = 1) int minLength) {
 
-        if (timeStr.length() < minLength) {
-            for (int i = 0; i < minLength - timeStr.length(); i++) {
-                timeStr = prefix + timeStr;
+        StringBuilder builder = new StringBuilder(sourceStr);
+        if (sourceStr.length() < minLength) {
+            for (int i = 0; i < minLength - sourceStr.length(); i++) {
+                builder.insert(0, prefix);
             }
         }
-        return timeStr;
+        return builder.toString();
     }
 }

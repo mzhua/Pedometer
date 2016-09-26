@@ -213,7 +213,7 @@ public class PMDailyBarChart extends View {
         mTextPaint.setTextAlign(Paint.Align.CENTER);//drawLeftLegend也会用到该paint,所以需要重新设置对齐方式
         for (int i = 0; i < 3; i++) {
             int x = (i + 1) * mContentWidth / 4 + mContentLeft;
-            canvas.drawText(StringUtil.autoPrefixStr((i + 1) * 6 + ":00", "0", 5), x, getMeasuredHeight() - getPaddingBottom(), mTextPaint);
+            canvas.drawText(StringUtil.autoPrefixStr((i + 1) * 6 + ":00", '0', 5), x, getMeasuredHeight() - getPaddingBottom(), mTextPaint);
         }
     }
 }
