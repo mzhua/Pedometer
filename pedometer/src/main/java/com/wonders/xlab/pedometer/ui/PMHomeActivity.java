@@ -77,6 +77,9 @@ public class PMHomeActivity extends BaseActivity {
         sendEventBroadcast(XPedometerEventConstant.EVENT_PAGE_CREATE_HOME, getResources().getString(R.string.pm_app_name));
     }
 
+    /**
+     * 接收计步Service发出的广播
+     */
     class StepBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -234,6 +237,11 @@ public class PMHomeActivity extends BaseActivity {
         sendEventBroadcast(XPedometerEventConstant.EVENT_PAGE_DESTROY_HOME, getResources().getString(R.string.pm_app_name));
     }
 
+    /**
+     * 发送事件广播供APP自行记录,处理
+     * @param event
+     * @param name
+     */
     private void sendEventBroadcast(String event, String name) {
         Intent intent = new Intent(getPackageName() + ".pm.event");
         intent.putExtra(XPedometerEventConstant.EXTRA_KEY_EVENT, event);
