@@ -57,43 +57,29 @@ public class TestMonthlyPresenter {
     }
 
     @Test
-    public void testGetDatasSuccess() {
-        int[] stepsPerRecord = new int[]{200, 300, 123};
-        int sumStepsOfToday = 0;
-
-        final List<PMStepEntity> entityList = new ArrayList<>();
-
-        for (int stepsOfPerRecord : stepsPerRecord) {
-            sumStepsOfToday += stepsOfPerRecord;
-
-            PMStepEntity entity = new PMStepEntity(System.currentTimeMillis(), stepsOfPerRecord);
-            entityList.add(entity);
-        }
-        int avgStepsOfToday = sumStepsOfToday / 3;
+    public void testGetNonDatas_CallViewToDisplay() {
 
         mMonthlyPresenter.getDatas(mStartTimeInMill, mEndTimeInMill);
         verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill), eq(PMStepLocalDataSource.DataType.MONTH), mCallback.capture());
-        mCallback.getValue().onSuccess(entityList);
-        verify(mView).showMonthlyData(eq(avgStepsOfToday), eq(sumStepsOfToday), ArgumentMatchers.<PMMonthLineAreaBean>anyList());
-        verify(mView, times(0)).showToastMessage(anyString());
+        mCallback.getValue().onSuccess(null);
+        verify(mView).showMonthlyData(anyInt(), anyInt(), ArgumentMatchers.<List<PMMonthLineAreaBean>>isNull());
     }
 
     @Test
-    public void testGetDatasSuccessReturnNull() {
+    public void testGetEmptyDatas_CallViewToDisplay() {
 
         mMonthlyPresenter.getDatas(mStartTimeInMill, mEndTimeInMill);
         verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill), eq(PMStepLocalDataSource.DataType.MONTH), mCallback.capture());
-        mCallback.getValue().onFail(new DefaultException("error"));
-        verify(mView).showToastMessage(eq("error"));
-        verify(mView, times(0)).showMonthlyData(anyInt(), anyInt(), ArgumentMatchers.<PMMonthLineAreaBean>anyList());
+        mCallback.getValue().onSuccess(new ArrayList<PMStepEntity>());
+        verify(mView).showMonthlyData(anyInt(), anyInt(), ArgumentMatchers.<List<PMMonthLineAreaBean>>isNull());
     }
 
     @Test
-    public void testGetDatasFailed() {
+    public void testGetDatasFailed_ShowToast() {
         mMonthlyPresenter.getDatas(mStartTimeInMill, mEndTimeInMill);
         verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill), eq(PMStepLocalDataSource.DataType.MONTH), mCallback.capture());
-        mCallback.getValue().onFail(new DefaultException("error"));
-        verify(mView).showToastMessage(eq("error"));
-        verify(mView, times(0)).showMonthlyData(anyInt(), anyInt(), ArgumentMatchers.<PMMonthLineAreaBean>anyList());
+        String error = "error";
+        mCallback.getValue().onFail(new DefaultException(error));
+        verify(mView).showToastMessage(eq(error));
     }
 }

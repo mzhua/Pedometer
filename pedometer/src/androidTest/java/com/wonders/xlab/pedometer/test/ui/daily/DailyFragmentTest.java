@@ -61,7 +61,7 @@ public class DailyFragmentTest {
 
 
         ViewInteraction textViewDaily = onView(
-                allOf(ViewMatchers.withId(R.id.tvDailyTitle), withText("09月26日"),
+                allOf(ViewMatchers.withId(R.id.tvDailyTitle), 
                         childAtPosition(
                                 allOf(ViewMatchers.withId(R.id.toolbar),
                                         childAtPosition(
@@ -69,7 +69,7 @@ public class DailyFragmentTest {
                                                 0)),
                                 1),
                         isDisplayed()));
-        textViewDaily.check(matches(withText("09月26日")));
+        textViewDaily.check(matches(withText("09月28日")));
 
         ViewInteraction view = onView(
                 allOf(ViewMatchers.withId(R.id.walkChart),

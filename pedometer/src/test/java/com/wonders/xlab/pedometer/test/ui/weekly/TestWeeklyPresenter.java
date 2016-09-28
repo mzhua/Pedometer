@@ -20,12 +20,9 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataType.MONTH;
 import static com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource.DataType.WEEK;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -58,18 +55,27 @@ public class TestWeeklyPresenter {
     }
 
     @Test
-    public void testGetDatasSuccess() {
+    public void testGetNonDatas_CallViewToDisplay() {
         mPresenter.getDatas(mStartTimeInMill, mEndTimeInMill);
-        verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill),eq(WEEK), mArgumentCaptor.capture());
+        verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill), eq(WEEK), mArgumentCaptor.capture());
         mArgumentCaptor.getValue().onSuccess(null);
-        verify(mView).showWeeklyData(anyInt(),anyInt(),isNull(List.class));
+        verify(mView).showWeeklyData(anyInt(), anyInt(), ArgumentMatchers.<List<PMWeeklyBarChartBean>>isNull());
     }
 
     @Test
-    public void testGetDatasFailed() {
+    public void testGetEmptyDatas_CallViewToDisplay() {
         mPresenter.getDatas(mStartTimeInMill, mEndTimeInMill);
-        verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill),eq(WEEK), mArgumentCaptor.capture());
-        mArgumentCaptor.getValue().onFail(new DefaultException("error"));
-        verify(mView).showToastMessage(eq("error"));
+        verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill), eq(WEEK), mArgumentCaptor.capture());
+        mArgumentCaptor.getValue().onSuccess(new ArrayList<PMStepEntity>());
+        verify(mView).showWeeklyData(anyInt(), anyInt(), ArgumentMatchers.<List<PMWeeklyBarChartBean>>isNull());
+    }
+
+    @Test
+    public void testGetDatasFailed_ShowToast() {
+        mPresenter.getDatas(mStartTimeInMill, mEndTimeInMill);
+        verify(mModel).getDataList(eq(mStartTimeInMill), eq(mEndTimeInMill), eq(WEEK), mArgumentCaptor.capture());
+        String error = "error";
+        mArgumentCaptor.getValue().onFail(new DefaultException(error));
+        verify(mView).showToastMessage(eq(error));
     }
 }

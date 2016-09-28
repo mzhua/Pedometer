@@ -18,6 +18,5 @@
 
 -keep class com.wonders.xlab.pedometer.data.PMStepEntity
 -keep class com.wonders.xlab.pedometer.XPedometer {*;}
--keep class com.wonders.xlab.pedometer.XPedometerEvent {*;}
 -keep class com.wonders.xlab.pedometer.XPedometerEventDataBean {*;}
 -keep class com.wonders.xlab.pedometer.service.StepCounterService {*;}
