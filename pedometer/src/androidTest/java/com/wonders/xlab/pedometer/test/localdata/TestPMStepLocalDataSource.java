@@ -56,7 +56,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testFirstInsertData() {
+    public void insertOrIncrease_firstInsert() {
         PMStepEntity entity = new PMStepEntity(System.currentTimeMillis());
         mLocalDataSource.insertOrIncrease(entity);
         List<PMStepEntity> pmStepEntities = mLocalDataSource.queryAll();
@@ -67,7 +67,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testReplaceData() {
+    public void insertOrIncrease_replace() {
         PMStepEntity earlyStepData = new PMStepEntity(System.currentTimeMillis() - PMStepLocalDataSource.INTERVAL_IN_MILL);
         PMStepEntity lateStepData = new PMStepEntity(System.currentTimeMillis());
         mLocalDataSource.insertOrIncrease(earlyStepData);
@@ -82,7 +82,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testInsertNewData() {
+    public void insertOrIncrease_insertNew() {
         long currentDataTimeInMill = System.currentTimeMillis();
         long preOutOfRangeDataTimeInMill = currentDataTimeInMill - PMStepLocalDataSource.INTERVAL_IN_MILL - 1;
 
@@ -92,13 +92,14 @@ public class TestPMStepLocalDataSource {
         mLocalDataSource.insertOrIncrease(lateStepData);
         List<PMStepEntity> pmStepEntities = mLocalDataSource.queryAll();
         assertThat("insert new data failed, the query result is null", pmStepEntities, notNullValue());
-        assertThat("insert new data failed, the two records should not be merged", pmStepEntities.size(), is(2));
-        assertThat("insert new data failed, the two records should not be merged", pmStepEntities.get(0).getStepCounts(), is(1));
-        assertThat("insert new data failed, the two records should not be merged", pmStepEntities.get(1).getStepCounts(), is(1));
+        String shouldNotMergeErrorMessage = "insert new data failed, the two records should not be merged";
+        assertThat(shouldNotMergeErrorMessage, pmStepEntities.size(), is(2));
+        assertThat(shouldNotMergeErrorMessage, pmStepEntities.get(0).getStepCounts(), is(1));
+        assertThat(shouldNotMergeErrorMessage, pmStepEntities.get(1).getStepCounts(), is(1));
     }
 
     @Test
-    public void testInsertOrReplaceWithBatchDataWithIndependentDatas() {
+    public void insertOrReplaceWithBatchData_allIndependentDatas() {
         List<PMStepEntity> sourceList = getTwoStepsOutOf20Minutes();
 
         mLocalDataSource.insertOrReplaceWithBatchData(sourceList);
@@ -109,7 +110,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testInsertOrReplaceWithBatchDataWithMergeAbleDatas() {
+    public void insertOrReplaceWithBatchData_mergeAbleDatas() {
         List<PMStepEntity> sourceList = getTwoStepsWithin20Minutes();
 
         mLocalDataSource.insertOrReplaceWithBatchData(sourceList);
@@ -121,14 +122,14 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testInsertOrReplaceWithBatchDataWithNullResource() {
+    public void insertOrReplaceWithBatchData_non() {
         mLocalDataSource.insertOrReplaceWithBatchData(null);
         List<PMStepEntity> pmStepEntities = mLocalDataSource.queryAll();
         assertNull("the query result should be null", pmStepEntities);
     }
 
     @Test
-    public void testQueryAllBetweenTimesOfDay() {
+    public void queryAllBetweenTimes_dayType() {
         List<PMStepEntity> sourceList = getTwoStepsOutOf20Minutes();
 
         mLocalDataSource.insertOrReplaceWithBatchData(sourceList);
@@ -141,7 +142,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testQueryAllBetweenTimesOfWeek() {
+    public void queryAllBetweenTimes_weekType() {
         List<PMStepEntity> sourceList = new ArrayList<>();
 
         mCalendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
@@ -162,7 +163,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testQueryAllBetweenTimesOfMonth() {
+    public void queryAllBetweenTimes_monthType() {
         List<PMStepEntity> sourceList = new ArrayList<>();
 
         mCalendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -183,7 +184,7 @@ public class TestPMStepLocalDataSource {
     }
 
     @Test
-    public void testQueryAllBetweenTimesOfAll() {
+    public void queryAllBetweenTimes_all() {
         List<PMStepEntity> sourceList = new ArrayList<>();
 
         mCalendar.set(Calendar.DAY_OF_MONTH, 1);
