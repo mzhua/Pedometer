@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class PMMonthlyPresenter extends BasePresenter implements PMStepContract.Presenter {
+public class PMMonthlyPresenter extends BasePresenter implements PMMonthlyContract.Presenter {
     private PMMonthlyContract.View mView;
     private PMStepContract.Model mModel;
 
@@ -24,8 +24,12 @@ public class PMMonthlyPresenter extends BasePresenter implements PMStepContract.
     }
 
     @Override
-    public void getDatas(long startTimeInMill, long endTimeInMill, @PMStepLocalDataSource.DataType int dataType) {
-        mModel.getDataList(startTimeInMill, endTimeInMill, dataType, new BaseContract.Model.Callback<List<PMStepEntity>>() {
+    public void getDatas(long startTimeInMill, long endTimeInMill) {
+        mModel.getDataList(startTimeInMill, endTimeInMill, PMStepLocalDataSource.DataType.MONTH, new BaseContract.Model.Callback<List<PMStepEntity>>() {
+            /**
+             *
+             * @param pmStepCountEntities the data query from database and group by day
+             */
             @Override
             public void onSuccess(List<PMStepEntity> pmStepCountEntities) {
                 List<PMMonthLineAreaBean> dataList = null;
@@ -36,7 +40,7 @@ public class PMMonthlyPresenter extends BasePresenter implements PMStepContract.
                     Calendar calendar = Calendar.getInstance();
 
                     //just in case, take the first seven records
-                    for (int i = 0; i < Math.min(pmStepCountEntities.size(), 6); i++) {
+                    for (int i = 0; i < Math.min(pmStepCountEntities.size(), 7); i++) {
                         PMStepEntity entity = pmStepCountEntities.get(i);
                         int counts = entity.getStepCounts();
                         sumStep += counts;
@@ -51,7 +55,7 @@ public class PMMonthlyPresenter extends BasePresenter implements PMStepContract.
 
             @Override
             public void onFail(@NonNull DefaultException e) {
-
+                mView.showToastMessage(e.getMessage());
             }
         });
     }

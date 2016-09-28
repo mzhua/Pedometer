@@ -1,6 +1,7 @@
 package com.wonders.xlab.pedometer.ui.weekly;
 
 import com.wonders.xlab.pedometer.base.BaseContract;
+import com.wonders.xlab.pedometer.localdata.PMStepLocalDataSource;
 import com.wonders.xlab.pedometer.widget.PMWeeklyBarChartBean;
 
 import java.util.List;
@@ -12,5 +13,9 @@ import java.util.List;
 public interface PMWeeklyContract {
     interface View extends BaseContract.View {
         void showWeeklyData(int avgStepCounts, int sumStepCounts, List<PMWeeklyBarChartBean> dataList);
+    }
+
+    interface Presenter extends BaseContract.Presenter {
+        void getDatas(long startTimeInMill, long endTimeInMill);
     }
 }

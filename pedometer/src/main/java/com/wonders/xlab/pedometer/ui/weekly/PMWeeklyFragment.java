@@ -34,7 +34,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepLocalDataSource.DataType.WEEK);
+            getPresenter().getDatas(startTimeInMill, endTimeInMill);
         }
     }
 
@@ -71,7 +71,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
         long timeMillis = System.currentTimeMillis();
-        getPresenter().getDatas(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis), PMStepLocalDataSource.DataType.WEEK);
+        getPresenter().getDatas(DateUtil.getBeginTimeOfWeekInMill(timeMillis),DateUtil.getEndTimeOfWeekInMill(timeMillis));
     }
 
     @Override

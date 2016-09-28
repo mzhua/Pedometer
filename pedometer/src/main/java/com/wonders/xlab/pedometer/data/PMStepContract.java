@@ -11,10 +11,6 @@ import java.util.List;
 
 public interface PMStepContract {
 
-    interface Presenter extends BaseContract.Presenter {
-        void getDatas(long startTimeInMill, long endTimeInMill, @PMStepLocalDataSource.DataType int dataType);
-    }
-
     interface Model extends BaseContract.Model {
         void getDataList(long startTimeInMill, long endTimeInMill, @PMStepLocalDataSource.DataType int dataType, Callback<List<PMStepEntity>> callback);
     }

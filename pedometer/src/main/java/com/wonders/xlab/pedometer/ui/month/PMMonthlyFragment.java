@@ -44,7 +44,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
     @Override
     public void refreshView(long startTimeInMill, long endTimeInMill) {
         if (hasViewCreated()) {
-            getPresenter().getDatas(startTimeInMill, endTimeInMill, PMStepLocalDataSource.DataType.MONTH);
+            getPresenter().getDatas(startTimeInMill, endTimeInMill);
         }
     }
 
@@ -72,7 +72,7 @@ public class PMMonthlyFragment extends MVPFragment<PMMonthlyPresenter> implement
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
         long timeInMill = System.currentTimeMillis();
-        getPresenter().getDatas(DateUtil.getBeginTimeOfMonthInMill(timeInMill), DateUtil.getEndTimeOfMonthInMill(timeInMill), PMStepLocalDataSource.DataType.MONTH);
+        getPresenter().getDatas(DateUtil.getBeginTimeOfMonthInMill(timeInMill), DateUtil.getEndTimeOfMonthInMill(timeInMill));
     }
 
     @Override

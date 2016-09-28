@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class PMWeeklyPresenter extends BasePresenter implements PMStepContract.Presenter {
+public class PMWeeklyPresenter extends BasePresenter implements PMWeeklyContract.Presenter {
     private PMWeeklyContract.View mView;
     private PMStepContract.Model mModel;
 
@@ -24,8 +24,8 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepContract.P
     }
 
     @Override
-    public void getDatas(long startTimeInMill, final long endTimeInMill, @PMStepLocalDataSource.DataType int dataType) {
-        mModel.getDataList(startTimeInMill, endTimeInMill, dataType, new BaseContract.Model.Callback<List<PMStepEntity>>() {
+    public void getDatas(long startTimeInMill, final long endTimeInMill) {
+        mModel.getDataList(startTimeInMill, endTimeInMill, PMStepLocalDataSource.DataType.WEEK, new BaseContract.Model.Callback<List<PMStepEntity>>() {
             @Override
             public void onSuccess(List<PMStepEntity> pmStepCountEntities) {
                 List<PMWeeklyBarChartBean> dataList = null;
@@ -53,7 +53,10 @@ public class PMWeeklyPresenter extends BasePresenter implements PMStepContract.P
 
             @Override
             public void onFail(@NonNull DefaultException e) {
-
+                String message = e.getMessage();
+                if (message != null) {
+                    mView.showToastMessage(message);
+                }
             }
         });
     }
