@@ -82,7 +82,7 @@
         </LinearLayout>
 
         <com.wonders.xlab.pedometer.widget.PMDailyBarChart
-            android:id="@+id/barChart"
+            android:id="@+id/barChartDaily"
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:layout_marginTop="24dp"

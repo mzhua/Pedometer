@@ -7,15 +7,21 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.CalendarMode;
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.wonders.xlab.pedometer.R;
-import com.wonders.xlab.pedometer.XPedometer;
 import com.wonders.xlab.pedometer.XPedometerEventConstant;
 import com.wonders.xlab.pedometer.base.BaseActivity;
 import com.wonders.xlab.pedometer.ui.daily.PMDailyFragment;
@@ -23,20 +29,23 @@ import com.wonders.xlab.pedometer.ui.month.PMMonthlyFragment;
 import com.wonders.xlab.pedometer.ui.weekly.PMWeeklyFragment;
 import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.util.FileUtil;
+import com.wonders.xlab.pedometer.widget.CalendarPopupWindow;
 import com.wonders.xlab.pedometer.widget.CircleIndicator;
-import com.wonders.xlab.pedometer.widget.XToolBarLayout;
+import com.wonders.xlab.pedometer.widget.RelativePopupWindow;
+import com.wonders.xlab.pedometer.widget.XTopBarLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
 
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Daily;
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Monthly;
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Weekly;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleView.Daily;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleView.Monthly;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleView.Weekly;
 
 public class PMHomeActivity extends BaseActivity {
 
-    private XToolBarLayout mToolBarLayout;
+    private XTopBarLayout mTopBarLayout;
     private ViewPager mViewPager;
     private CircleIndicator mCircleIndicator;
 
@@ -44,6 +53,24 @@ public class PMHomeActivity extends BaseActivity {
     private PMDailyFragment mDailyFragment;
     private PMWeeklyFragment mWeeklyFragment;
     private PMMonthlyFragment mMonthlyFragment;
+
+    private CalendarPopupWindow mCalendarPopupWindow;
+
+    /**
+     * 先隐藏提起选择控件
+     *
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (null != mCalendarPopupWindow && mCalendarPopupWindow.isShowing()) {
+            mCalendarPopupWindow.dismiss();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +81,13 @@ public class PMHomeActivity extends BaseActivity {
         mWeeklyFragment = PMWeeklyFragment.newInstance();
         mMonthlyFragment = PMMonthlyFragment.newInstance();
 
-        mToolBarLayout = (XToolBarLayout) findViewById(R.id.xtbl);
+        mTopBarLayout = (XTopBarLayout) findViewById(R.id.xtbl);
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
         mCircleIndicator = (CircleIndicator) findViewById(R.id.indicator);
         mViewPager.setOffscreenPageLimit(3);
 
-        setupActionBar(mToolBarLayout.getToolbar());
-        mToolBarLayout.getToolbar().setNavigationOnClickListener(new View.OnClickListener() {
+        setupActionBar(mTopBarLayout.getToolbar());
+        mTopBarLayout.getToolbar().setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -124,13 +151,13 @@ public class PMHomeActivity extends BaseActivity {
                 super.onPageSelected(position);
                 switch (position) {
                     case 0:
-                        mToolBarLayout.showTitleView(Daily);
+                        mTopBarLayout.showTitleView(Daily);
                         break;
                     case 1:
-                        mToolBarLayout.showTitleView(Weekly);
+                        mTopBarLayout.showTitleView(Weekly);
                         break;
                     case 2:
-                        mToolBarLayout.showTitleView(Monthly);
+                        mTopBarLayout.showTitleView(Monthly);
                         break;
                 }
             }
@@ -138,27 +165,50 @@ public class PMHomeActivity extends BaseActivity {
     }
 
     private void initTitleView() {
-        mToolBarLayout.showTitleView(Daily);
-        mToolBarLayout.setDailyTitleViewListener(new XToolBarLayout.OnDailyTitleViewDateChangeListener() {
+        mTopBarLayout.showTitleView(Daily);
+        mTopBarLayout.setDailyTitleViewListener(new XTopBarLayout.OnDailyTitleViewClickListener() {
             @Override
-            public void onDateChange(long startTimeInMill, long endTimeInMill) {
-                mDailyFragment.refreshView(startTimeInMill, endTimeInMill);
+            public void onClick() {
+                showCalendarPopupWindow();
             }
         });
-        mToolBarLayout.setWeeklyTitleViewListener(new XToolBarLayout.OnTitleArrowClickListener() {
+        mTopBarLayout.setWeeklyTitleViewListener(new XTopBarLayout.OnTitleArrowClickListener() {
 
             @Override
             public void onClick(long startTimeInMill, long endTimeInMill) {
                 mWeeklyFragment.refreshView(startTimeInMill, endTimeInMill);
             }
         });
-        mToolBarLayout.setMonthlyTitleViewListener(new XToolBarLayout.OnTitleArrowClickListener() {
+        mTopBarLayout.setMonthlyTitleViewListener(new XTopBarLayout.OnTitleArrowClickListener() {
 
             @Override
             public void onClick(long startTimeInMill, long endTimeInMill) {
                 mMonthlyFragment.refreshView(startTimeInMill, endTimeInMill);
             }
         });
+    }
+
+    /**
+     * 日期选择控件
+     */
+    private void showCalendarPopupWindow() {
+        if (null == mCalendarPopupWindow) {
+            mCalendarPopupWindow = new CalendarPopupWindow(this);
+            mCalendarPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+            mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            mCalendarPopupWindow.setupCalendarView(null, CalendarMode.MONTHS);
+            mCalendarPopupWindow.setOnDateSelectedListener(new OnDateSelectedListener() {
+                @Override
+                public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
+                    mCalendarPopupWindow.dismiss();
+                    Calendar calendar = date.getCalendar();
+                    long mCurrentDayTimeInMill = calendar.getTimeInMillis();
+                    mDailyFragment.refreshView(DateUtil.getBeginTimeOfDayInMill(calendar), DateUtil.getEndTimeOfDayInMill(calendar));
+                    mTopBarLayout.setTitleViewText(Daily, mCurrentDayTimeInMill);
+                }
+            });
+        }
+        mCalendarPopupWindow.showOnAnchor(mTopBarLayout, RelativePopupWindow.VerticalPosition.ALIGN_TOP, RelativePopupWindow.HorizontalPosition.LEFT);
     }
 
     @Override
@@ -239,6 +289,7 @@ public class PMHomeActivity extends BaseActivity {
 
     /**
      * 发送事件广播供APP自行记录,处理
+     *
      * @param event
      * @param name
      */

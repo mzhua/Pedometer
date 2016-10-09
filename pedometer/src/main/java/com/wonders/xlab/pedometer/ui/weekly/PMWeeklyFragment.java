@@ -67,7 +67,7 @@ public class PMWeeklyFragment extends MVPFragment<PMWeeklyPresenter> implements 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mBarChart = (PMWeeklyBarChart) view.findViewById(R.id.barChart);
+        mBarChart = (PMWeeklyBarChart) view.findViewById(R.id.barChartWeekly);
         mTvAvgSteps = (TextView) view.findViewById(R.id.tvAvgSteps);
         mTvSumSteps = (TextView) view.findViewById(R.id.tvSumSteps);
         long timeMillis = System.currentTimeMillis();

@@ -102,7 +102,7 @@ public class DailyFragmentTest {
         textView3.check(matches(withText("0公里")));
 
         ViewInteraction view2 = onView(
-                allOf(ViewMatchers.withId(R.id.barChart),
+                allOf(ViewMatchers.withId(R.id.barChartDaily),
                         childAtPosition(
                                 childAtPosition(
                                         ViewMatchers.withId(R.id.viewPager),

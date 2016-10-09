@@ -8,7 +8,7 @@
         <attr name="InnerCircleDashColor" format="color"/>
     </declare-styleable>
 
-    <declare-styleable name="XToolBarLayout">
+    <declare-styleable name="XTopBarLayout">
         <attr name="xtblTitleText" format="string"/>
         <attr name="xtblTitleColor" format="color"/>
         <attr name="xtblTitleGravity" format="enum">

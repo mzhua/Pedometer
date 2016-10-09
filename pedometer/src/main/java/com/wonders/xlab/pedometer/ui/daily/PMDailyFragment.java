@@ -67,7 +67,7 @@ public class PMDailyFragment extends MVPFragment<PMDailyPresenter> implements PM
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mBarChart = (PMDailyBarChart) view.findViewById(R.id.barChart);
+        mBarChart = (PMDailyBarChart) view.findViewById(R.id.barChartDaily);
         mRingChart = (PMDailyRingChart) view.findViewById(R.id.walkChart);
         long timeMillis = System.currentTimeMillis();
         getPresenter().getDatas(DateUtil.getBeginTimeOfDayInMill(timeMillis),DateUtil.getEndTimeOfDayInMill(timeMillis));

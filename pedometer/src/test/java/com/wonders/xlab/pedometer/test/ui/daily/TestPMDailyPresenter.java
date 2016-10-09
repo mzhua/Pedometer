@@ -36,7 +36,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @RunWith(JUnit4.class)
 public class TestPMDailyPresenter {
 
-    PMDailyPresenter mDailyPresenter;
+    private final int DATE_TYPE_DAY = PMStepLocalDataSource.DataType.DAY;
+
+    private PMDailyPresenter mDailyPresenter;
 
     @Mock
     PMDailyContract.View mView;
@@ -64,7 +66,7 @@ public class TestPMDailyPresenter {
                 callback.onSuccess(null);
                 return 200;
             }
-        }).when(mModel).getDataList(anyLong(), anyLong(), eq(PMStepLocalDataSource.DataType.DAY), ArgumentMatchers.<BaseContract.Model.Callback<List<PMStepEntity>>>any());
+        }).when(mModel).getDataList(anyLong(), anyLong(), eq(DATE_TYPE_DAY), ArgumentMatchers.<BaseContract.Model.Callback<List<PMStepEntity>>>any());
 
         mDailyPresenter.getDatas(0L, 0L);
 
@@ -76,7 +78,7 @@ public class TestPMDailyPresenter {
         //调用
         mDailyPresenter.getDatas(0L, 0L);
         //验证
-        verify(mModel).getDataList(anyLong(), anyLong(), eq(PMStepLocalDataSource.DataType.DAY), mCallback.capture());
+        verify(mModel).getDataList(anyLong(), anyLong(), eq(DATE_TYPE_DAY), mCallback.capture());
         //触发callback
         mCallback.getValue().onSuccess(null);
         //验证callback触发后回调View显示
@@ -88,7 +90,7 @@ public class TestPMDailyPresenter {
         //调用
         mDailyPresenter.getDatas(0L, 0L);
         //验证
-        verify(mModel).getDataList(anyLong(), anyLong(), eq(PMStepLocalDataSource.DataType.DAY), mCallback.capture());
+        verify(mModel).getDataList(anyLong(), anyLong(), eq(DATE_TYPE_DAY), mCallback.capture());
         //触发callback
         mCallback.getValue().onSuccess(new ArrayList<PMStepEntity>());
         //验证callback触发后回调View显示
@@ -103,7 +105,7 @@ public class TestPMDailyPresenter {
         //调用
         mDailyPresenter.getDatas(0L, 0L);
         //验证
-        verify(mModel).getDataList(anyLong(), anyLong(), eq(PMStepLocalDataSource.DataType.DAY), mCallback.capture());
+        verify(mModel).getDataList(anyLong(), anyLong(), eq(DATE_TYPE_DAY), mCallback.capture());
         //触发callback
         mCallback.getValue().onSuccess(entityList);
         //验证callback触发后回调View显示
@@ -115,7 +117,7 @@ public class TestPMDailyPresenter {
         String errorMsg = "get data failed";
 
         mDailyPresenter.getDatas(0L, 0L);
-        verify(mModel).getDataList(anyLong(), anyLong(), eq(PMStepLocalDataSource.DataType.DAY), mCallback.capture());
+        verify(mModel).getDataList(anyLong(), anyLong(), eq(DATE_TYPE_DAY), mCallback.capture());
         mCallback.getValue().onFail(new DefaultException(errorMsg));
         verify(mView).showToastMessage(anyString());
     }

@@ -13,17 +13,12 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.prolificinteractive.materialcalendarview.CalendarDay;
-import com.prolificinteractive.materialcalendarview.CalendarMode;
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
-import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.wonders.xlab.pedometer.R;
 import com.wonders.xlab.pedometer.util.DateUtil;
 import com.wonders.xlab.pedometer.util.DensityUtil;
@@ -32,16 +27,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
 
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleGravity.GRAVITY_TITLE_CENTER;
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleGravity.GRAVITY_TITLE_LEFT;
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Daily;
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Monthly;
-import static com.wonders.xlab.pedometer.widget.XToolBarLayout.TitleView.Weekly;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleGravity.GRAVITY_TITLE_CENTER;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleGravity.GRAVITY_TITLE_LEFT;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleView.Daily;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleView.Monthly;
+import static com.wonders.xlab.pedometer.widget.XTopBarLayout.TitleView.Weekly;
 
 /**
  * Created by hua on 16/8/26.
  */
-public class XToolBarLayout extends LinearLayout {
+public class XTopBarLayout extends LinearLayout {
     private Context mContext;
     private final float DIVIDER_HEIGHT_DEFAULT = 0.8f;
 
@@ -64,9 +59,20 @@ public class XToolBarLayout extends LinearLayout {
     private long mCurrentWeekTimeInMill;
     private long mCurrentMonthTimeInMill;
 
-    private OnDailyTitleViewDateChangeListener mDailyDateChangeListener;
+    private OnDailyTitleViewClickListener mDailyTitleViewClickListener;
 
-    private CalendarPopupWindow mCalendarPopupWindow;
+    private Calendar mCalendar = Calendar.getInstance();
+
+    /**
+     * click left or right arrow will trigger it
+     */
+    public interface OnTitleArrowClickListener {
+        void onClick(long startTimeInMill, long endTimeInMill);
+    }
+
+    public interface OnDailyTitleViewClickListener {
+        void onClick();
+    }
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({Daily, Weekly, Monthly})
@@ -83,22 +89,21 @@ public class XToolBarLayout extends LinearLayout {
         int GRAVITY_TITLE_CENTER = 4;
     }
 
-    public XToolBarLayout(Context context) {
+    public XTopBarLayout(Context context) {
         this(context, null);
     }
 
-    public XToolBarLayout(Context context, AttributeSet attrs) {
+    public XTopBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public XToolBarLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public XTopBarLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.setOrientation(VERTICAL);
         mContext = context;
         initTitleView(context);
         initAttributes(context, attrs, defStyleAttr);
         initToolbar(context);
-        initCalendarPopupWindow();
         setupDividerView();
     }
 
@@ -110,16 +115,16 @@ public class XToolBarLayout extends LinearLayout {
      * @param defStyleAttr
      */
     private void initAttributes(Context context, AttributeSet attrs, int defStyleAttr) {
-        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.XToolBarLayout, defStyleAttr, 0);
-        mTitleText = array.getString(R.styleable.XToolBarLayout_xtblTitleText);
+        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.XTopBarLayout, defStyleAttr, 0);
+        mTitleText = array.getString(R.styleable.XTopBarLayout_xtblTitleText);
         if (TextUtils.isEmpty(mTitleText)) {
             mTitleText = getResources().getString(R.string.pm_app_name);
         }
-        mTitleGravity = array.getInt(R.styleable.XToolBarLayout_xtblTitleGravity, GRAVITY_TITLE_CENTER);
-        mTitleColor = array.getColor(R.styleable.XToolBarLayout_xtblTitleColor, ContextCompat.getColor(context, R.color.pmTopBarTitleColor));
-        mBackgroundColor = array.getColor(R.styleable.XToolBarLayout_xtblBackgroundColor, ContextCompat.getColor(context, R.color.pmTopBarBackground));
-        mShowDivider = array.getBoolean(R.styleable.XToolBarLayout_xtblShowDivider, false);
-        mShowNavigation = array.getBoolean(R.styleable.XToolBarLayout_xtblShowNavigation, false);
+        mTitleGravity = array.getInt(R.styleable.XTopBarLayout_xtblTitleGravity, GRAVITY_TITLE_CENTER);
+        mTitleColor = array.getColor(R.styleable.XTopBarLayout_xtblTitleColor, ContextCompat.getColor(context, R.color.pmTopBarTitleColor));
+        mBackgroundColor = array.getColor(R.styleable.XTopBarLayout_xtblBackgroundColor, ContextCompat.getColor(context, R.color.pmTopBarBackground));
+        mShowDivider = array.getBoolean(R.styleable.XTopBarLayout_xtblShowDivider, false);
+        mShowNavigation = array.getBoolean(R.styleable.XTopBarLayout_xtblShowNavigation, false);
         array.recycle();
     }
 
@@ -157,47 +162,11 @@ public class XToolBarLayout extends LinearLayout {
         mDailyTitleView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCalendarPopupWindow.showOnAnchor(mToolbar, RelativePopupWindow.VerticalPosition.ALIGN_TOP, RelativePopupWindow.HorizontalPosition.LEFT);
-            }
-        });
-    }
-
-    /**
-     * 日期选择控件
-     */
-    private void initCalendarPopupWindow() {
-        mCalendarPopupWindow = new CalendarPopupWindow(mContext);
-        mCalendarPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        mCalendarPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        mCalendarPopupWindow.setupCalendarView(null, CalendarMode.MONTHS);
-        mCalendarPopupWindow.setOnDateSelectedListener(new OnDateSelectedListener() {
-            @Override
-            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-                mCalendarPopupWindow.dismiss();
-                Calendar calendar = date.getCalendar();
-                mCurrentDayTimeInMill = calendar.getTimeInMillis();
-                if (null != mDailyDateChangeListener) {
-                    mDailyDateChangeListener.onDateChange(DateUtil.getBeginTimeOfDayInMill(calendar), DateUtil.getEndTimeOfDayInMill(calendar));
+                if (null != mDailyTitleViewClickListener) {
+                    mDailyTitleViewClickListener.onClick();
                 }
-                setTitleViewText(Daily, mCurrentDayTimeInMill);
             }
         });
-    }
-
-    /**
-     * 先隐藏提起选择控件
-     *
-     * @param keyCode
-     * @param event
-     * @return
-     */
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (mCalendarPopupWindow.isShowing()) {
-            mCalendarPopupWindow.dismiss();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     /**
@@ -249,16 +218,14 @@ public class XToolBarLayout extends LinearLayout {
 
     }
 
-    private Calendar mCalendar = Calendar.getInstance();
-
     /**
      * 设置标题文字
      *
      * @param titleView
      * @param timeInMill
      */
-    private void setTitleViewText(@TitleView int titleView, long timeInMill) {
-        String titleText = "";
+    public void setTitleViewText(@TitleView int titleView, long timeInMill) {
+        String titleText;
         switch (titleView) {
             case Daily:
                 mDailyTitleView.setText(DateUtil.getDayFormatString(timeInMill));
@@ -276,21 +243,13 @@ public class XToolBarLayout extends LinearLayout {
         }
     }
 
-    public interface OnTitleArrowClickListener {
-        void onClick(long startTimeInMill, long endTimeInMill);
-    }
-
-    public interface OnDailyTitleViewDateChangeListener {
-        void onDateChange(long startTimeInMill, long endTimeInMill);
-    }
-
     /**
      * 日模式下监听日期选择的变化
      *
      * @param listener
      */
-    public void setDailyTitleViewListener(@NonNull OnDailyTitleViewDateChangeListener listener) {
-        mDailyDateChangeListener = listener;
+    public void setDailyTitleViewListener(@NonNull OnDailyTitleViewClickListener listener) {
+        mDailyTitleViewClickListener = listener;
     }
 
     /**
@@ -419,7 +378,7 @@ public class XToolBarLayout extends LinearLayout {
      * @param drawable
      * @return
      */
-    public Drawable getCompatDrawable(Drawable drawable) {
+    private Drawable getCompatDrawable(Drawable drawable) {
         if (drawable == null) {
             return null;
         }
