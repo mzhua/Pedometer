@@ -4,6 +4,8 @@
 
 [ ![Download](https://api.bintray.com/packages/mzhua/maven/pedometer/images/download.svg) ](https://bintray.com/mzhua/maven/pedometer/_latestVersion)
 
+[Demo](https://github.com/mzhua/PedometerDemo)
+
 ---
 
 ## 版本支持

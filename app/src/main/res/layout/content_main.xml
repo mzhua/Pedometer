@@ -15,7 +15,12 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="goToPedometer"
+        android:onClick="backupPedometer"
         android:text="备份"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="goToPedometer"
+        android:text="计步器"/>
 
 </LinearLayout>
