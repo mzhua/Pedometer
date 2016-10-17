@@ -24,12 +24,12 @@ artifacts {
 //    archives generateSourcesJar
 }
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//Properties properties = new Properties()
+//properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
+    user = "mzhua"//properties.getProperty("bintray.user")
+    key = "27febd72816f24e548221db311ff547d99ea0d08"//properties.getProperty("bintray.apikey")
 
     pkg {
         repo = 'maven'
